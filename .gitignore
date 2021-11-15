@@ -1,4 +1,4 @@
-/vendor/
+#/vendor/
 node_modules/
 npm-debug.log
 yarn-error.log
@@ -11,7 +11,9 @@ app/storage/
 public/storage
 public/hot
 storage/*.key
-.env
+#.env
 Homestead.yaml
 Homestead.json
 /.vagrant
+/resources/filelibrary
+/resources/fileprivate
