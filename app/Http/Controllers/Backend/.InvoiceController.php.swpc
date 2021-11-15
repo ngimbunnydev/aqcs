@@ -1,0 +1,2024 @@
+<?php
+namespace App\Http\Controllers\Backend;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Config;
+use Validator;
+use PDF;
+use Image;
+use SnappyImage;
+//use Illuminate\Validation\Rule;
+use App\Rules\Notin_array;
+
+use App\Models\Backend\Invoice;
+use App\Models\Backend\Invoices;
+use App\Models\Backend\Addstocks;
+use App\Models\Backend\Stocktracking;
+use App\Models\Backend\Accountno;
+
+use App\Models\Backend\Product;
+use App\Models\Backend\Size;
+use App\Models\Backend\Color;
+use App\Models\Backend\Customer;
+use App\Models\Backend\General;
+use App\Models\Backend\Unit;
+
+use App\Models\Backend\Favproduct;
+use App\Models\Backend\Paymentmethod;
+use App\Models\Backend\Cashinout;
+use App\Models\Backend\Dishnote;
+
+use App\Http\Controllers\Backend\InvcycleController;
+use App\Http\Controllers\Backend\UserController;
+use App\Http\Controllers\Backend\AddstockController;
+use App\Http\Controllers\Backend\RpaymentController;
+use App\Http\Controllers\Backend\QuotationController;
+use App\Http\Controllers\Backend\PosController;
+use App\Http\Controllers\Backend\ProductController;
+use App\Http\Controllers\Backend\PtopstockController;
+
+
+class InvoiceController extends Controller
+{
+    private $args;
+    private $model;
+    private $fprimarykey='inv_id';
+    private $dflang;
+    private $request;
+    private $rcdperpage=-1; #record per page, set negetive to get all record#
+    private $obj_info=['name'=>'invoice','title'=>'Invoice','routing'=>'admin.controller','icon'=>'<i class="fa fa-file-invoice-dollar green" aria-hidden="true"></i>'];
+
+    private $protectme;
+
+    private $invcycle;
+    private $users;
+    private $addstock;
+
+    private $tablename;
+    private $invoices;
+    
+    /////
+    private $posobj;
+    private $productobj;
+    private $positem_perpage=19;
+
+
+    public function __construct(array $args){ //public function __construct(Array args){
+        $this->obj_info['title'] = __('label.lb14');
+        $this->protectme = [
+                        config('ccms.protectact.index'),
+                        config('ccms.protectact.create'),
+                        config('ccms.protectact.duplicate'),
+                        config('ccms.protectact.store'),
+                        config('ccms.protectact.edit'),
+                        config('ccms.protectact.update'),
+                        config('ccms.protectact.delete'),
+                        config('ccms.protectact.restore'),
+                        config('ccms.protectact.destroy'),
+
+                        ];
+                        
+
+        $this->args = $args;
+        $this->model = new Invoice;
+        $this->invoices = new Invoices;
+        $this->tablename = $this->model->Gettable();
+        $this->dflang = config('ccms.multilang')[0];
+
+        $this->invcycle = new InvcycleController($args);
+        $this->users = new UserController($args);
+        
+        $this->addstock = new AddstockController($args);
+      
+
+    } /*../function..*/
+
+    public function __get($property) {
+            if (property_exists($this, $property)) {
+                return $this->$property;
+            }
+    }
+
+    public function __set($property, $value) {
+        if (property_exists($this, $property)) {
+            $this->$property = $value;
+        }
+    }
+
+    public function default()
+    {
+        $js_filemanagersetting=array(   'displaymode' => '2',
+                                        'filetype'   =>'image',
+                                        'givent_txtbox'=>'txt_scrshot',
+                                        'calledby'=>'public',
+                                        'numperpage'=>12,
+                                        'ajax_url'=>config('ccms.js_env.ajaxpublic_url'),
+                                        'objtable'=>'',
+                                        'idvalue'=>0
+                                    );
+      
+        $js_config = [
+            'filemanagerSetting'    => $js_filemanagersetting,
+            'jsmessage'             =>array('df_confirm'=>__('ccms.df_confirm')),
+            'usingsizecolor'  => config('sysconfig.usingsizecolor')
+        ];
+
+        $js_config = array_merge($js_config);
+
+        $sizes=Size::getsize($this->dflang[0])->pluck('title', 's_id');
+        $colors=Color::getcolor($this->dflang[0])->pluck('title', 'cl_id');
+      
+        $units=Unit::getunit($this->dflang[0])->get();
+        $units = json_decode(json_encode($units), true);
+        $dishnote=Dishnote::getdishnote($this->dflang[0])->pluck('title', 'dhn_id');
+      
+        $accountno = Accountno::where('trash', '!=', 'yes')
+          ->where('acctype_id',2)
+          ->select(\DB::raw("accno_id, concat(code,'-',title) as title"))
+          ->pluck('title', 'accno_id')->toArray();
+      
+      
+        $paymentmethod = Paymentmethod::where('trash', '!=', 'yes')->select('pmethod_id', 'title')->pluck('title', 'pmethod_id')->toArray();
+        
+        return [
+          'js_config'=>$js_config,
+          'sizes' =>$sizes,
+          'colors'=>$colors,
+          'units'=>$units,
+          'dishnote' => $dishnote,
+          'accountno' => $accountno,
+          
+          'paymentmethod' => $paymentmethod
+        ];
+    } /*../function..*/
+
+    public function listingModel()
+    {
+        $branchcondition='=';
+        if(empty($this->args['userinfo']['branch_id']))
+        {$branchcondition='<>';}
+      
+        #DEFIND MODEL#
+        return $this->model
+        ->leftJoin('pos_customer', $this->tablename.'.cm_id', '=', 'pos_customer.cm_id')
+        ->select(\DB::raw(   $this->fprimarykey." AS id, $this->tablename.title, $this->tablename.branch_id as branch_id, accno_id, accno_discount,stage, inv_date, due_date, gtotal, paid,mainvat,maindiscount, fter_note,  $this->tablename.cm_id as cm_id, latinname, cm_code, vat, nativename, personincharge, cphone, caddress, (gtotal-paid) as balance,sale_id, $this->tablename.tags as tags, $this->tablename.trash as trash"
+                                                )
+                                        )
+          ->where($this->tablename.'.branch_id', $branchcondition , $this->args['userinfo']['branch_id']??0);
+    } /*../function..*/
+  
+//      public function dadachey()
+//     {
+//         #DEFIND MODEL#
+        
+//         $result= $this->model
+        
+//         ->select(\DB::raw($this->fprimarykey." AS id"
+//                                                 )
+//                                         )
+//           ->whereRaw("DATE(inv_date)<'2020-09-11'")->get();
+//        //dd($result);
+//        foreach($result as $row){
+//          $destroyinv = $this->model->where($this->fprimarykey, (int)$row->id)->delete();
+//          $destroyinvs = $this->invoices->where($this->fprimarykey, (int)$row->id)->delete();
+//        }
+//     } /*../function..*/
+
+    public function sfp($request, $results)
+    {
+        #Sort Filter Pagination#
+
+        // CACHE SORTING INPUTS
+        $allowed = array($this->fprimarykey,'title', 'inv_date'); // add allowable columns to sort on
+        $sort = in_array($request->input('sort'), $allowed) ? $request->input('sort') : $this->fprimarykey;//$this->tablename.'.inv_date'; // if user type in the url a column that doesnt exist app will default to id
+        $order = $request->input('order') === 'asc' ? 'asc' : 'desc'; // default desc
+        if($sort=='inv_date') $sort = $this->tablename.'.inv_date';
+        $results = $results->orderby($sort, $order);
+
+
+        // FILTERS
+        $appends = []; #set its elements for Appending to Pagination#
+        $querystr = [];
+
+        if ($request->has('title') && !empty($request->input('title')))
+        {
+            $qry=$request->input('title');
+            //$results = $results->where('title', 'like', '%'.$qry.'%');
+          
+             $results = $results->where(function( $query ) use($qry){
+                   $query
+                  ->whereRaw("lower(JSON_UNQUOTE(title)) like '%".strtolower($qry)."%'")
+                  ->orWhereRaw("latinname like '%".$qry."%'")
+                  ->orWhereRaw("nativename like '%".$qry."%'")
+                  ->orWhereRaw("personincharge like '%".$qry."%'")
+                     ->orWhereRaw("cphone like '%".$qry."%'")
+                     ->orWhereRaw("cm_code like '%".$qry."%'")
+                     ->orWhere($this->fprimarykey, '=', (int)$qry);
+              });
+          
+          
+            array_push($querystr, 'title='.$qry);
+            $appends = array_merge ($appends,['title'=>$qry]);
+        }
+
+        $date_cond='1=1';
+        if ($request->has('datetype') && !empty($request->input('datetype')))
+        {
+          $datefield = $this->tablename.'.'.$request->input('datetype');
+          array_push($querystr, 'datetype='.$request->input('datetype'));
+          $appends = array_merge ($appends,['datetype'=>$request->input('datetype')]);
+        }
+      
+        if ($request->has('fromdate') && !empty($request->input('fromdate')))
+        {
+            $qry=$request->input('fromdate');
+            $fromdate=date("Y-m-d", strtotime($qry));
+            $date_cond="$datefield='".$fromdate."'";
+            
+            array_push($querystr, 'fromdate='.$qry);
+            $appends = array_merge ($appends,['fromdate'=>$qry]);
+        }
+        if ($request->has('todate') && !empty($request->input('todate')))
+        {
+            $qry=$request->input('todate');
+            $todate=date("Y-m-d", strtotime($qry));
+            $date_cond="$datefield='".$todate."'";
+
+            array_push($querystr, 'todate='.$qry);
+            $appends = array_merge ($appends,['todate'=>$qry]);
+        }
+        if($request->has('fromdate') && $request->has('todate') && !empty($request->input('fromdate')) && !empty($request->input('todate')))
+        {
+            $fromdate=$request->input('fromdate');
+            $fromdate=date("Y-m-d", strtotime($fromdate));
+
+            $todate=$request->input('todate');
+
+            $todate=date("Y-m-d", strtotime($todate));
+
+            $date_cond="($datefield between '$fromdate' and '$todate')";
+        }
+        $results = $results->whereRaw($date_cond);
+      
+        if ($request->has('status') && !empty($request->input('status')))
+        {
+            $qry=$request->input('status');
+            $status_cond = '';
+            if($qry==1){
+              $status_cond="((gtotal-paid)>0 AND $this->tablename.trash<>'yes')"; // >=
+            }
+            elseif($qry==2){
+              $status_cond="((gtotal-paid)=0 AND $this->tablename.trash<>'yes')";
+            }
+            elseif($qry==3){
+              $status_cond="$this->tablename.trash='yes'";
+            }
+            
+          
+            array_push($querystr, 'status='.$qry);
+            $appends = array_merge ($appends,['status'=>$qry]);
+            if($status_cond!=''){
+              $results = $results->whereRaw($status_cond);
+            }
+            
+            
+        }
+        
+      
+
+        //dd($results->toSql());
+        #no need to send default sort and order to Blade#
+        // if($sort==$this->fprimarykey && $order=='desc')
+        // {
+        //     $sort = '';
+        //     $order = '';
+        // }
+        
+
+        // PAGINATION and PERPAGE
+        $perpage=null;
+        $perpage_query=[];
+        if ($request->has('perpage'))
+        {
+            $perpage = $request->input('perpage');
+            $perpage_query = ['perpage='.$perpage];
+            $appends = array_merge ($appends,['perpage'=>$perpage]);
+        }
+        else
+        {
+            $perpage = $this->rcdperpage<0 ? config('ccms.rpp') : $this->rcdperpage;
+        }
+        $results = $results->paginate($perpage);
+
+
+        $appends = array_merge ($appends,
+                        [
+                        'sort'      => $request->input('sort'),
+                        'order'     => $request->input('order')
+                        ]
+                    );
+
+        $pagination = $results->appends(
+                $appends
+            );
+
+       // dd($pagination);
+        $recordinfo = recordInfo($pagination->currentPage(), $pagination->perPage(), $pagination->total());
+
+        return [
+                        'results'           => $results,
+                        'paginationlinks'    => $pagination->links(),
+                        'recordinfo'    => $recordinfo,
+                        'sort'          => $sort,
+                        'order'         => $order,
+                        'querystr'      => $querystr,
+                        'perpage_query' => $perpage_query
+                    ];
+    } /*../function..*/
+
+    public function index(Request $request, $condition=[], $setting=[])
+    {
+
+        $obj_info=$this->obj_info;
+        $default=$this->default();
+        
+
+
+        #DEFIND MODEL#
+        $results = $this->listingmodel();
+
+        $sfp = $this->sfp($request, $results);
+
+        return view('backend.v'.$this->obj_info['name'].'.index')
+                ->with(['act' => 'index'])
+                ->with(['obj_info' => $obj_info])
+                ->with($sfp)
+                ->with(['caption' => __('ccms.active')])
+                ->with($setting);
+
+
+    } /*../function..*/
+
+
+    public function trash(Request $request)
+    {
+        $obj_info= $this->obj_info;
+        return view('backend.widget.noaction',
+                    compact('obj_info'
+                            )
+
+
+                )->with(
+                    [
+                        
+                        'caption' => __('ccms.noaction')
+                    ]
+                );
+    } /*../function..*/
+
+
+    public function create(Request $request)
+    {
+
+        $obj_info=$this->obj_info;
+
+        $default=$this->default();
+        $js_config = $default['js_config'];
+        $allsizes = $default['sizes'];
+        $allcolors = $default['colors'];
+        $dishnote = $default['dishnote'];
+        $accountno = $default['accountno'];
+        $paymentmethod = $default['paymentmethod'];
+      
+
+        $inncycle=$this->invcycle->listingModel($this->dflang[0])->pluck('title', 'id')->where('trash', '!=', 'yes');
+        $inncycle = json_decode(json_encode($inncycle), true);
+
+        $users=$this->users->listingModel($this->dflang[0])->pluck('name', 'id')->where('trash', '!=', 'yes');
+        $users = json_decode(json_encode($users), true);
+        $args = $this->args;
+      
+        //////
+        $this->posobj = new PosController($args);
+        $results = $this->posobj->listingmodel();
+        
+        $this->posobj->rcdperpage = $this->positem_perpage;
+        $sfp = $this->posobj->sfp($request, $results);
+      
+        $this->productobj = new ProductController($args);
+        $categories=$this->productobj->model->getcategory($this->dflang[0])->get();
+        $category_list = $categories->pluck('title','c_id')->toArray();
+        $categories = json_decode(json_encode($categories), true);
+        $cat_tree=buildArrayTree($categories,['c_id','parent_id'],0);
+        //$paymentmethod = Paymentmethod::where('trash', '!=', 'yes')->select('pmethod_id', 'title')->pluck('title', 'pmethod_id')->toArray();
+        
+        ////
+        
+        $theme='';
+        $displaymainmenu = false;
+        if(config('sysconfig.invtheme')=='t2'){
+          
+          $theme = '_theme1';
+          $displaymainmenu = true;
+        }
+        
+        $quotation = new QuotationController($this->args);
+        $quotation_list = $quotation->indexapi($request);
+        return view('backend.v'.$this->obj_info['name'].'.create'.$theme,
+                    compact('obj_info',
+                            'js_config',
+                            'allsizes',
+                            'allcolors',
+                            'inncycle',
+                            'users',
+                            'cat_tree',
+                            'accountno',
+                            
+                            'paymentmethod',
+                            'args',
+                            'displaymainmenu',
+                            'quotation_list',
+                            'dishnote'
+                            )
+
+
+                )->with(
+                    [
+                        'submitto'  => 'store',
+                        'fprimarykey'     => $this->fprimarykey,
+                        'caption' => __('ccms.new'),
+                    ]
+                )
+                ->with($sfp);
+               
+    } /*../function..*/
+
+
+    public function store(Request $request)
+    {
+        //https://scotch.io/tutorials/simple-laravel-crud-with-resource-controllers
+        //return redirect()->back();
+
+        //dd($request->all());
+        $default = $this->default();
+
+        $obj_info=$this->obj_info;
+
+        if ($request->isMethod('post'))
+        {
+            $preview = false;
+            $returntype = '';
+            if($request->has('returntype'))
+            {
+               $preview = true;
+                $returntype = $request->input('returntype');
+            }
+
+            $possave = false;
+            if($request->has('possave'))
+            {
+                   $possave = true;
+            }
+          
+            $withpayment = false;
+            if($request->has('withpayment'))
+            {
+                   $withpayment = true;
+            }
+
+            $validator = $this->validation($request);
+          
+            if ($validator->fails()) {
+                //$errors = $validator->errors();
+                //foreach ($errors->all() as $message) {
+                    //echo $message;
+                //}
+
+                if($preview){
+                    
+
+                    $routing=url_builder($obj_info['routing'],[$obj_info['name'],'preview']);
+                    return [
+                                        'act' => false,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        
+                                                    ]
+                                    ];
+
+
+
+                }
+
+                #when use from POS
+                
+
+                    if ($possave) {
+
+                         $routing=url_builder($obj_info['routing'],[$obj_info['name'],'validerror']);
+                        return [
+                                        'act' => false,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'errors' => $validator->errors()->first(),
+                                                        
+                                                    ]
+                                    ];
+                    }
+                    #end ajax SAVE
+
+
+
+                $routing=url_builder($obj_info['routing'],[$obj_info['name'],'create']);
+                #return \Redirect::to($routing)
+                #->with('errors', $validator->errors()->first())
+                #->with('input' , $request->input())
+                #->with('submitto', 'create');
+
+                
+
+                $subpd_id = $request->input('subpd_id');
+                $prodctsarray=[];
+                if(count($subpd_id)>1)
+                {
+                    array_pop($subpd_id);
+                    $prodctsarray=productsubform($subpd_id, new Product, $this->dflang);
+                    
+                }
+
+                return [
+                    'act' => false,
+                    'url' => $routing,
+                    'passdata' => [
+                                    'errors' => $validator->errors()->first(),
+                                    'input' => $request->input(),
+                                    'products' => $prodctsarray,
+                                    'submitto' => 'create'
+                                ]
+                ];
+
+            } else {
+
+                $data=$this->setinfo($request);
+              
+                $cusinfo = [];
+                if(config('sysconfig.customermode')!='map'){
+                //if(beta()){
+                   $this->args['routeinfo']['frominvoice']='yes';
+                   $customer_obj = new CustomerController($this->args);
+                   $cusinfo = $customer_obj->customer_referral($request);
+              
+                  if(!empty($cusinfo) && isset($cusinfo['tableData'])){
+                      $data['tableData']['cm_id'] = $cusinfo['tableData']['cm_id'];
+                      $save_customer = $customer_obj->model->insert($cusinfo['tableData']);
+                  }
+                  else if(!empty($cusinfo)){
+                    $data['tableData']['cm_id'] = $cusinfo['cm_id'];
+                  }
+                }
+              
+                $savedata =false;
+                
+                $cashinout = false;
+                $cashinout_lastid=0;
+                if(config('sysconfig.requiredchkin')=='yes' && ($withpayment || $possave)){
+                      $cashinout = Cashinout::chkrequestchkin($this->args['userinfo']['id'])->first();
+                      if($cashinout){
+                              $cashinout_lastid = $cashinout->cashio_id;
+                      }
+                      $object = json_decode($data['tableData']['tags']);
+                      $object->cashio_id = $cashinout_lastid;
+                      $data['tableData']['tags'] = json_encode($object);
+                      
+                }
+              
+               
+              
+             
+                /*
+                |Check Stock
+                */
+                RECHECKSTOCK:
+                $costmethod = config('sysconfig.costmethod')??'average';
+                $orderby = ($costmethod=='lifo') ? 'desc' : 'asc';
+         
+                $date_order='add_date';
+                if($costmethod=='fefo'){
+                  $orderby ='asc';
+                  $date_order='product_expdate';
+                }
+                ///
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    $pd_ids = array_pluck($data['subtableData'], 'pd_id');
+                    $productinfo = Product::select(\DB::raw("pd_id, pcost, avgcost, xtracost, madewith, imginfo, isservice,unt_id,
+                                                    JSON_UNQUOTE(title->'$.".$this->dflang[0]."') AS title"
+                                                )
+                            );
+                      
+                  
+                      $all_madewith = $productinfo->whereIn('pd_id', $pd_ids)->pluck('madewith')->toArray();
+                      $all_madewithid=retrieveMadewithID($all_madewith);
+                      
+                      $pd_ids = array_merge($pd_ids,$all_madewithid);
+                      //->get()->keyBy('pd_id')->toArray();
+                      $currentstock = $this->addstock->model->select('as_id', 'pd_id','qty_inhand', 'qtytotal_inhand', 'cost', 'batch', 'product_expdate')
+                        ->leftJoin('pos_stockadds', 'pos_stockadd.asm_id', '=', 'pos_stockadds.asm_id')
+                        ->whereIn('pd_id', $pd_ids)
+                        ->where('qtytotal_inhand','>',0)
+                        ->where('wh_id', $this->args['userinfo']['wh_id'])
+                        ->where('udcs', 'yes')
+                        ->where('trash', '!=', 'yes')
+                        ->orderby('pos_stockadds.'.$date_order, $orderby)
+                        ->orderby('as_id',$orderby)
+                        ->get()->toArray();
+                  
+                      
+                  
+                    $productinfo = $productinfo->orwhereIn('pd_id', $pd_ids)->get()->keyBy('pd_id')->toArray();
+                    
+                   foreach($data['subtableData'] as $ind => $product)
+                   {
+                       $pd_id = $product['pd_id'];
+                       
+                       $sizecolor = $product['size_color'];
+                       $orderqty  = $product['subqty'];
+                       $madewith = $productinfo[$pd_id]['madewith']??'';
+                      /*some time user add item to invoice as not a project*/
+                      
+                      if(strlen($madewith)>2 && config('sysconfig.madewithstock')!='own')
+                      {
+                        $madewith = json_decode($madewith,true);
+                        $order_original = $orderqty;
+                        foreach ($madewith as $key => $value) {
+                          list($pd_id, $sizeid, $colorid)=explode('-', $key);
+                          $sizecolor = $sizeid.'-'.$colorid;
+                          $orderqty  = $value * $order_original;
+                          $filifo = filifo($pd_id, $sizecolor, $orderqty, $currentstock,$productinfo);
+                          $check = $this->checkstock($request, $obj_info, $preview, $possave,$filifo, $productinfo[$pd_id]);
+                          if($check!='go') return $check;
+                          $filifos[$ind][] = $filifo;
+                        }
+                        
+                      }
+                      else
+                      {
+                          $existing_stock=0;
+                          if(!$preview && isset($currentstock[$ind]['qty_inhand'])){
+                            $qty_inhand = $currentstock[$ind]['qty_inhand'];
+                            $qty_inhand = json_decode($qty_inhand, true);
+                            $existing_stock = $qty_inhand[$sizecolor]??0;
+                          }
+                          
+                        
+                        $filifo = filifo($pd_id, $sizecolor, $orderqty, $currentstock,$productinfo);
+                        
+                        $check = $this->checkstock($request, $obj_info, $preview, $possave,$filifo, $productinfo[$pd_id]??0);
+                        if($check!='go'){
+                          /*
+                          | Try Auto Transfer Stock Here....
+                          */
+                          if(config('sysconfig.p2ptransfer')=='auto'){
+                            
+                            $product_for_transfer = get_child('cms_product','pd_id','parent_id',$pd_id,"");
+                         
+                            if(empty($product_for_transfer)){
+                              return $check;
+                            }
+                            else{
+                               
+                               $arr_subproduct = explode(',', $product_for_transfer);
+                               $check_transfer = $this->addstock->model
+                                 ->select('as_id', 'pos_stockadds.pd_id','qty_inhand', 'cms_product.unt_id','cms_product.pcost',\DB::raw("JSON_UNQUOTE(cms_product.title->'$.".$this->dflang[0]."') AS title"))
+                                ->leftJoin('pos_stockadds', 'pos_stockadd.asm_id', '=', 'pos_stockadds.asm_id')
+                                ->leftJoin('cms_product', 'cms_product.pd_id', '=', 'pos_stockadds.pd_id')
+                                ->whereIn('pos_stockadds.pd_id', $arr_subproduct)
+                                ->where('qtytotal_inhand','>',0)
+                                ->where('wh_id', $this->args['userinfo']['wh_id'])
+                                ->where('udcs', 'yes')
+                                ->where('pos_stockadd.trash', '!=', 'yes')
+                                ->get()->toArray();
+                              
+                                
+                                $tranfer_record=[];
+                                if(empty($check_transfer)){
+                                  return $check;
+                                }
+                                else{
+                                  $units = $default['units'];
+                                  $units = collect($units)->keyBy('unt_id')->toArray();
+                                  $units_info = unitInfo($units);
+                                  //dd($units_info[4]['unitinfo'][2]);
+                                  $myRequest = new Request();
+                                  $myRequest->setMethod('POST');
+                                  
+                                  $ind=0;
+                                  foreach($check_transfer as $item){
+                                    
+                                    $this_unit = $item['unt_id'];
+                                    $convertstock = $units_info[$this_unit]['unitinfo'][$productinfo[$pd_id]['unt_id']];
+                                    
+                                    $qty_inhand = json_decode($item['qty_inhand'],true);
+                                    $all_transfer = $qty_inhand[$sizecolor]*$convertstock;
+                                      if($all_transfer>$orderqty){
+                                        
+                                        $tranfer_num =ceil(abs($existing_stock-$orderqty)/$convertstock);
+                                        $tranfer_record['subpd_id'][$ind]=$item['pd_id'];
+                                        $tranfer_record['description'][$ind]=$item['title'];
+                                        $tranfer_record['txt_qty'.$item['pd_id'].'-'.$sizecolor]=$tranfer_num;
+                                        $tranfer_record['subtransferto'][$ind]=$pd_id;
+                                        $tranfer_record['subcost'][$ind]=$item['pcost']/$convertstock;
+                                        break;
+                                      }
+                                    
+                                    }
+                                    if(empty($tranfer_record)){
+                                      return $check;
+                                    }
+                                    else{
+                                      $tranfer_record['title'] = 'Product to Product';
+                                      $tranfer_record['add_date'] = date("Y-m-d H:i:s");
+                                      $tranfer_record['subpd_id'][$ind+1]='';
+                                      $tranfer_record['subtransferto'][$ind+1]='';
+                                      
+                                      $myRequest->request->add($tranfer_record);
+                                      $ptop = new PtopstockController($this->args);
+                                      if(!$preview){
+                                        $saveptop = $ptop->store($myRequest);
+                                        goto RECHECKSTOCK;
+                                        
+                                      }
+                                      
+                                    }
+                                  
+                                }
+                                
+                            }
+                            
+                           
+                          }
+                          else{
+                            return $check;
+                          }
+                           
+                        }
+                        
+                        $filifos[$ind][] = $filifo;
+                      }
+                     
+                    
+                   }
+                   
+              /////////////////////////////
+                           
+                if($preview){
+                    //$chkpreview = checkpermission("pos-preview", $this->args['userinfo']);
+                    
+                      /* Request from mobile Appp*/
+                      if($request->has('apirequest')){
+                        
+                        $request->request->add($data);
+                        $receipt= $this->preview($request);
+                        return $receipt;
+                      }
+                      if($request->has('apirequest1')){
+                        $request->request->add($data);
+                        $receipt= $this->preview($request);
+                        return $receipt;
+                      }
+                      $routing=url_builder($obj_info['routing'],[$obj_info['name'],'preview']);
+                      return [
+                                        'act' => true,
+                                        'url' => $routing,
+                                        
+                                        'passdata' => [
+                                                        
+                                                        'input' => $data,
+                                                        'id' => $data['id'],
+                                                        'returntype' => $returntype
+                                                    ]
+                                    ];
+                   
+
+
+
+                }
+                
+
+                /*CHECK POS SAVE*/
+                $please_save_rmp= false;
+                if($possave || $withpayment)
+                {
+                        $pay_amount = (float)$data['pay_amount'];
+                        $pmethod_id = !empty($data['pmethod_id'])?(int)$data['pmethod_id']:config('sysconfig.pospmethod_id');
+                        $grandtotal = (float)$data['tableData']['gtotal'];
+                    
+                        $chkpermission = checkpermission("pos-abrp", $this->args['userinfo']); // accept blank r.p.
+                        if($pay_amount<$grandtotal && !$chkpermission){
+
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'validerror']);
+                            return [
+                                            'act' => false,
+                                            'url' => $routing,
+                                            'passdata' => [
+                                                            'errors' => __('ccms.rcpayment'),
+
+                                                        ]
+                                        ];
+                        }
+                        else
+                        {
+                            $totable_amount = $grandtotal;
+                            if($pay_amount<$grandtotal)
+                            {
+                              $totable_amount = $pay_amount;
+                            }
+                            elseif($pay_amount>$grandtotal){
+                              $totable_amount = $grandtotal;
+                            }
+                            
+                            $rpayment = new RpaymentController($this->args);
+                            $request->request->add(['inv_id' => $data['id']]);
+                            $request->request->add(['pay_amount' => $totable_amount]);
+                            $request->request->add(['pay_date' => date("Y-m-d")]);
+                            $request->request->add(['pmethod_id' =>$pmethod_id]);
+                            $request->request->add(['tnote' => 'POS, Received']);
+                            $request->request->add(['withpayment' => $withpayment]);
+
+                            $saverpayment = $rpayment->validation($request);
+                            
+                            if ($saverpayment->fails() && !$chkpermission) {
+                                
+                                return [
+                                    'act' => false,
+                                    'url' => '',
+                                    'passdata' => [
+                                                    'errors' => $saverpayment->errors()->first()
+                                                ]
+                                ];
+
+                            }
+                          
+                            
+                            $savedata = $this->model->insert($data['tableData']);
+                          
+                            if(!empty($pay_amount) && $savedata)
+                            {
+                                $please_save_rmp = true;
+                                /*$store_rpayment = $rpayment->store($request, true);
+                                
+                                if($store_rpayment['act']==false)
+                                {
+                                  $savedata= false;
+                                  $destroyinv = $this->model->where($this->fprimarykey, (int)$data['id'])->delete();
+                                  
+                                    return [
+                                      'act' => false,
+                                      'url' => '',
+                                      'passdata' => [
+                                                      'errors' => $store_rpayment['passdata']['errors']
+                                                  ]
+                                  ];
+                                }*/
+                            }
+                            
+                            
+                            
+                          
+                            
+                          
+                          
+                        }
+                  
+                  
+                }
+                else
+                {
+                    //dd($data);
+                    $savedata = $this->model->insert($data['tableData']);
+                }
+              
+                if($savedata)
+                {
+                  
+                  
+                  /*start COST and Tracking Stock*/
+                  $stocktracking=[];
+                      foreach($data['subtableData'] as $ind => $product)
+                      {
+                        $pd_id = $product['pd_id'];
+                        $subqty = $product['subqty'];
+                        if(empty($pd_id))
+                        {
+                          /*when user add NONE Product to Invoice*/
+                          $pcost = $xtracost=0;
+                        }
+                        else{
+                          $size_color = $product['size_color'];
+                          //$subqty = $product['subqty'];
+                          $madewith = $productinfo[$pd_id]['madewith'];
+
+
+                          $pcost = $productinfo[$pd_id]['pcost'];
+                          $xtracosts = $productinfo[$pd_id]['xtracost'];
+                          $xtracosts = json_decode($xtracosts, true);
+                          $xtrac_sizecolor = str_replace("0","",$size_color);
+                          $xtracost = $xtracosts[$xtrac_sizecolor]??0;
+                        }
+                        
+                        
+                        
+                        
+                        if(empty($pd_id)  || $productinfo[$pd_id]['isservice']=='yes')
+                        {
+                          $product['costdetail'] = json_encode([]);
+                          $product['cost'] = ($pcost + $xtracost) * $subqty;
+                        }
+                        else
+                        {
+                         
+                          $each = $filifos[$ind];
+                         
+                          $costdetail=[];
+                          $totacost =0;
+
+                          foreach($each as $row)
+                          {
+
+                            array_push($costdetail, $row['costdetail']);
+                            $totacost= $row['cost'];
+                            
+                            /*Stock tracking*/
+                           
+                              
+                              if(!empty($row['costdetail']))
+                              {
+                                foreach($row['costdetail'] as $totracking)
+                                {
+                                  list($key, $value) = array_divide($totracking);
+                                  $invformat = config('sysconfig.inv').formatid($data['id']);
+                                  array_push($stocktracking,
+                                            [
+                                              'sttracking_id'=>0,
+                                              'as_id' => $value[0],
+                                              'pd_id' => $value[5],
+                                              'qty' => json_encode([$key[1]=>$value[1]]),
+                                              'note' => json_encode(['actedby'=>'invoice', 'ref'=>$invformat]),
+                                              'type' => '0', /*0=deduct, 1= add*/
+                                              'track_date' => date('Y-m-d H:i:s'),
+                                              'blongto' => $this->args['userinfo']['id']
+                                            ]
+                                   );
+                                  //
+                                }/*foreach*/
+                                
+                              }
+                              
+                            
+                            /*Stock tracking*/
+
+                          }
+                          
+                          
+                         
+                          
+                          $product['costdetail'] = json_encode($costdetail);
+                          if(strlen($madewith)>2)
+                          {
+                            $totacost= ($pcost + $xtracost) * $subqty;
+                      
+                          }
+                          $product['cost'] = $totacost;
+                        }
+                        
+                        $data['subtableData'][$ind] = $product;
+                       
+                      }
+                      
+                     
+                
+                  
+                      /*save sub invoice*/
+                      //
+                      $savsubinvoice = Invoices::insert($data['subtableData']);
+                      //Update Quotation Status
+                      if($data['tableData']['qoute_id']>0){
+                        $quotation = new QuotationController($this->args);
+                        $updateqt = $quotation->model->where('qt_id', (int)$data['tableData']['qoute_id'])->update(['stage'=>100]);
+                      }
+                  
+                  
+                      if($savsubinvoice)
+                      {
+                          /*update AddstockS*/
+                              foreach($currentstock as $stock)
+                              {
+                                $as_id = $stock['as_id'];
+                                $stock_pdid = $stock['pd_id'];
+                                $qtytotal_inhand = $stock['qtytotal_inhand'];
+                                $qty_inhand = $stock['qty_inhand'];
+
+                                if(!empty($as_id))
+                                {
+                                  $updatestock = Addstocks::where('as_id', $as_id)
+                                    ->where('pd_id', $stock_pdid)
+                                    ->update(['qty_inhand'=>$qty_inhand, 'qtytotal_inhand'=> $qtytotal_inhand]);
+
+                                }
+
+                              }
+
+
+                          /*end-update-Addstocks*/
+
+                          if(!empty($stocktracking))
+                          {
+                            $savetrakcing = Stocktracking::insert($stocktracking);
+                          }
+                        
+                          /*IF Required Check-In*/
+                          if(config('sysconfig.requiredchkin')=='yes' && ($withpayment || $possave)){
+                           
+                            
+                            $tag = '';
+                            if($cashinout){
+                              if(empty($cashinout->tag)){
+                                $tag = $data['id'].',';
+                              }
+                              else{
+                                $tag = $cashinout->tag.$data['id'].',';
+                              }
+                              $cashinout = new Cashinout;
+                              $update_chkin = $cashinout->where('cashio_id', $cashinout_lastid)->update(['tag'=>$tag]);
+                            }
+
+
+                          }
+                          /*End*/
+                        
+                          /*Add General Journal pfk*/
+                          
+                              $gj_data=[];
+                              //For Main
+                              $main_acc = $data['tableData']['accno_id'];
+                              $main_natureside =  natureside([$main_acc]);
+                              if($main_natureside){
+                                $natureside = $main_natureside[$main_acc];
+                                $amount = ['dr'=>0, 'cr'=>0];
+                                $amount[$natureside->natureside] = $data['subtotal'];
+                                 $gj_record = [
+                                      0,
+                                      $data['tableData']['branch_id'],
+                                      'inv',
+                                      $data['id'],
+                                      '',
+                                      0,
+                                      $natureside->accno_id,
+                                      $natureside->title,
+                                      $amount['dr'],
+                                      $amount['cr'],
+                                      '',
+                                      $data['tableData']['inv_date'],
+                                      '',
+                                      $data['tableData']['add_date'],
+                                      'no',
+                                      $data['tableData']['blongto']
+                                    ];
+
+                                  array_push($gj_data, gf_setinfo($gj_record));
+                              }
+                            
+                               //for Discount
+                             $chk_discount = $data['subtotal'] - $data['tableData']['gtotal'];
+                             $gj_discount_record = [];
+                             $disc_natureside=[];
+                             if($chk_discount>0){
+                               $disc_natureside =  natureside([$data['tableData']['accno_discount']]);
+                               $discnatureside_obj = $disc_natureside[$data['tableData']['accno_discount']];
+                               
+                               $amount_dis[$discnatureside_obj->accno_id] = [$chk_discount, 0];
+                               $amount_dis[$natureside->accno_id] = [0, $chk_discount];
+                               
+                               $disc_natureside = array_merge($disc_natureside, $main_natureside);
+                               foreach($disc_natureside as $ele){
+                                 
+                                 $gj_record = [
+                                      0,
+                                      $data['tableData']['branch_id'],
+                                      'inv',
+                                      $data['id'],
+                                      'disc',
+                                      $ele->accno_id,
+                                      $ele->accno_id,
+                                      $ele->title,
+                                      $amount_dis[$ele->accno_id][0],
+                                      $amount_dis[$ele->accno_id][1],
+                                      'Invoice discount',
+                                      $data['tableData']['inv_date'],
+                                      '',
+                                      $data['tableData']['add_date'],
+                                      'no',
+                                      $data['tableData']['blongto']
+                                    ];
+                                 array_push($gj_discount_record, gf_setinfo($gj_record));
+                               }
+                               
+                             }
+                              
+                              //For Sub
+                              $sub_list = Invoices::where('inv_id', $data['id'])->select('*');
+                              $sub_list = $sub_list->get()->keyBy('invd_id')->toArray();
+                              
+                              $product_ids = array_column($sub_list, 'pd_id');
+                              $product_acc = productAccount($product_ids);
+
+                              $coa = $product_acc['coa'];
+                              $natureside = $product_acc['natureside'];
+                              //initial data
+                              $gj_data_group=[];
+                              if(!empty($coa)){
+                                
+                                foreach($sub_list as $record){
+
+                                  $pd_id = $record['pd_id'];
+                                  $product_coa = (array)$coa[$pd_id];
+                                  unset($product_coa['pd_id']);
+                                  //$cost = $record['amount'];
+
+                                  $gj_record=[];
+                                  foreach($product_coa as $key => $val){
+                                    $amount = ['dr'=>0, 'cr'=>0];
+                                    if(!empty($val)){
+
+                                      if($key=='accno_id'){
+                                        $amount['cr'] = $record['cost'];
+                                      }
+                                      elseif($key == 'accno_idrpm'){
+                                        $amount[$natureside[$val]->natureside] = $record['amount'];
+                                      }
+                                      else{
+                                        $amount[$natureside[$val]->natureside] = $record['cost'];
+                                      }
+
+
+
+
+                                      $gj_record = [
+                                                      0,
+                                                      $data['tableData']['branch_id'],
+                                                      'inv',
+                                                      $record['inv_id'],
+                                                      'invd',
+                                                      $record['invd_id'],
+                                                      $val,
+                                                      $natureside[$val]->title,
+                                                      $amount['dr'],
+                                                      $amount['cr'],
+                                                      '',
+                                                      $data['tableData']['inv_date'],
+                                                      '',
+                                                      $data['tableData']['add_date'],
+                                                      'no',
+                                                      $data['tableData']['blongto']
+                                                    ];
+                                      $gj_data_group[$key][] = gf_setinfo($gj_record);
+                                    }
+                                  }
+
+                                }/*end For*/
+                              }
+                              
+                              
+                             if(!empty($gj_data_group)){
+                               /* Order for meet to Execl Format*/
+                               $group_order =[$gj_data_group['accno_idrpm']??[], $gj_data_group['accno_idcogs']??[], $gj_data_group['accno_id']??[]];
+                               foreach($group_order as $arr){
+                                $gj_data = array_merge($gj_data, $arr);
+                              }
+                             }
+                            
+                             if(!empty($gj_discount_record)){
+                               $gj_data = array_merge($gj_data, $gj_discount_record);
+                             }
+                            
+                            
+                            $sav_gj =  save_gj($gj_data);
+                            
+                          /*---------------------------------------End For GJ--------------------------*/
+                          
+                          if($please_save_rmp){
+                                $store_rpayment = $rpayment->store($request, true);
+                                if($store_rpayment['act']==false)
+                                {
+                                  $savedata= false;
+                                  $destroyinv = $this->model->where($this->fprimarykey, (int)$data['id'])->delete();
+                                  $destroyinv_sub = Invoices::where($this->fprimarykey, (int)$data['id'])->delete();
+                                  $delete_gj = gj_delete('inv', $data['id']);
+                                    return [
+                                      'act' => false,
+                                      'url' => '',
+                                      'passdata' => [
+                                                      'errors' => $store_rpayment['passdata']['errors']
+                                                  ]
+                                  ];
+                                }
+                               
+                          }
+                        
+
+                      }
+                      else
+                      {
+                          $savedata= false;
+                          $destroyinv = $this->model->where($this->fprimarykey, (int)$data['id'])->delete();
+                          if($possave)
+                          {
+                            $destroyrp = $rpayment->model->where($this->fprimarykey, (int)$data['id'])->delete();
+                          }
+                          $routing=url_builder($obj_info['routing'],[$obj_info['name'],'create']);
+                          $subpd_id = $request->input('subpd_id');
+                          $prodctsarray=[];
+                          if(count($subpd_id)>1)
+                          {
+                              array_pop($subpd_id);
+                              $prodctsarray=productsubform($subpd_id, new Product, $this->dflang);
+                          }
+                          return [
+                              'act' => false,
+                              'url' => $routing,
+                              'passdata' => [
+                                              'errors' => __('ccms.rqnvalid'),
+                                              'input' => $request->input(),
+                                              'products' => $prodctsarray,
+                                              'submitto' => 'create'
+                                          ]
+                          ];
+                        
+                        
+                        
+                        
+                     }
+                 //
+                    
+
+                    $savetype=strtolower($request->input('savetype'));
+                    $success_ms = __('ccms.suc_save');
+
+                    #when use ajax to SAVE
+                  
+                    if ($possave) {
+                        
+                        $routing=url_builder($obj_info['routing'],[$obj_info['name'],'saveposnext']);
+                        return [
+                                        'act' => $savedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        //'input' => $request->input(),
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                        ];
+
+                    }
+                    #end ajax SAVE
+                  
+                     #when use ajax to SAVE
+                    if ($request->session()->has('ajax_access') && $request->session()->get('ajax_access')) {
+                        
+                        $tags = json_decode($data['tableData']['tags']);
+                        $invtype = $tags->invtype;
+                        $routing=url_builder($obj_info['routing'],[$invtype,$request->input('ajaxnext')]);
+                        return [
+                                        'act' => $savedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        'input' => $request->input(),
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                    }
+                    #end ajax SAVE
+
+                    $arr_savetype=[
+                        "save"=>"index",
+                        "save.1"=>"index?pay=".$data['id'],
+                        "save.2"=>"index?pdf=".$data['id'],
+                        "save.3"=>"index?receipt=".$data['id'],
+                        "save.4"=>"create?pdf=".$data['id'],
+                        "new"=>"create",
+                        "apply"=> 'edit/'.$data['id']
+                    ];
+
+                    $action = empty($arr_savetype[$savetype])? 'index' : $arr_savetype[$savetype];
+                    if($savetype=='save.5'){
+                      $routing=url_builder(
+                        $obj_info['routing'],
+                        ['hmstreatment', 'show/'.$data['tm_id']]
+                      );
+                    }
+                    else{
+                      $routing=url_builder(
+                        $obj_info['routing'],
+                        [$obj_info['name'], $action]
+                      );
+                    }
+                    
+                            #return \Redirect::to($routing)
+                            #->with('success', $success_ms)
+                            #->with($this->fprimarykey , $data['id']);
+                            return [
+                                        'act' => $savedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        //'input' => $request->input(),
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+
+                }/*../if savedata==true..*/
+            }
+        } /*../if POST..*/
+
+        
+    } /*../function..*/
+
+    public function update(Request $request)
+    {
+        $obj_info=$this->obj_info;
+
+        if ($request->isMethod('post'))
+        {
+
+            
+            $validator = $this->validation($request, true);
+            if ($validator->fails()) {
+                //$errors = $validator->errors();
+                //foreach ($errors->all() as $message) {
+                    //echo $message;
+                //}
+
+                $routing=url_builder($obj_info['routing'],[$obj_info['name'],'edit/'.$request->input($this->fprimarykey)]);
+                #return \Redirect::to($routing)
+                #->with('errors', $validator->errors()->first())
+                #->with('input' , $request->input());
+
+                $subpd_id = $request->input('subpd_id');
+                $prodctsarray=[];
+                if(count($subpd_id)>1){
+                    array_pop($subpd_id);
+                    $prodctsarray = productsubform($subpd_id, new Product, $this->dflang);
+                }
+                
+
+                return [
+                    'act' => false,
+                    'url' => $routing,
+                    'passdata' => [
+                                    'errors' => $validator->errors()->first(),
+                                    'input' => $request->input(),
+                                    'products' => $prodctsarray
+                                ]
+                ];
+
+            } else {
+
+
+                $data=$this->setinfo($request, true);
+                $updatedata = $this->model->where($this->fprimarykey,$data['id'])
+                                            ->update($data['tableData']);
+
+                $adjuststockdata = $data['adjuststockdata'];
+
+                /**
+                    Add stock by old Ajdust stock and delete it out
+                **/
+                $sadj_id = $data['oldadjuststockid'];
+                $oldadjuststocks = Adjuststocks::where('sadj_id', $sadj_id)->get()->toArray();
+                $oldidtostock = array_pluck($oldadjuststocks, 'id_tostock');
+                $proceedaddstock = [
+                    'subtableData' => $oldadjuststocks,
+                    'id_tostocks' => $oldidtostock,
+                ];
+                
+                if(!empty($oldadjuststocks) && !empty($adjuststockdata['subtableData']))
+                {
+
+                    /*save sub invoice*/
+                    $deleteoldsub = Invoices::where($this->fprimarykey,$data['id'])->delete();
+                    $savsubinvoice = Invoices::insert($data['subtableData']);
+
+                    /*Add stock*/
+                    stockProceed($proceedaddstock, $this->args, new Stock);
+                    $deleteoldstock = Adjuststocks::where('sadj_id', $sadj_id)->delete();
+
+                    /*Adjust again*/
+                    $save_adjusts = Adjuststocks::insert($adjuststockdata['subtableData']);
+                    stockProceed($adjuststockdata, $this->args, new Stock, -1);
+                    
+                
+                }
+
+                ############
+                $savetype=strtolower($request->input('savetype'));
+                $success_ms = __('ccms.suc_edit');
+                    switch ($savetype) {
+                        case 'save':
+                            # code...
+                            if ($request->session()->has('backurl'))
+                            {
+                                $routing = $request->session()->get('backurl');
+                                $request->session()->forget('backurl');
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                if(stripos($routing, $obj_info['name'])===false)
+                                {
+                                    $routing=url_builder($obj_info['routing'],[$obj_info['name']]);
+                                }
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            }
+                            else
+                            {
+                                $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            }
+                            
+                            break;
+                        case 'save.1':
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],"index?pay=".$data['id']]);
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            break;
+
+                        case 'save.2':
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],"index?pdf=".$data['id']]);
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            break;
+
+                        case 'save.3':
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],"index?receipt=".$data['id']]);
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            break;
+                        
+                         case 'save.4':
+                            $routing=url_builder($obj_info['routing'],['hmstreatment',"show",1]);
+                                #return \Redirect::to($routing)
+                                #->with('success', $success_ms)
+                                #->with($this->fprimarykey , $data['id']);
+
+                                return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        $this->fprimarykey => $data['id'],
+                                                        'id' => $data['id']
+                                                    ]
+                                    ];
+                            break;
+
+                        case 'new':
+                            # code...
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'create']);
+                            #return \Redirect::to($routing)
+                            #->with('success', $success_ms);
+                            return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        'id' => $data['id']
+                                                        
+                                                    ]
+                                    ];
+                            break;
+
+                        case 'apply':
+                            # code...
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'edit/'.$data['id']]);
+                            #return \Redirect::to($routing)
+                            #->with('success', $success_ms);
+                            return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        'id' => $data['id']
+                                                        
+                                                    ]
+                                    ];
+                            break;
+
+                        default:
+                            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+                            #return \Redirect::to($routing)
+                            #->with('success', $success_ms);
+                            return [
+                                        'act' => $updatedata,
+                                        'url' => $routing,
+                                        'passdata' => [
+                                                        'success' => $success_ms,
+                                                        'id' => $data['id']
+                                                        
+                                                    ]
+                                    ];
+                            break;
+
+                    }
+               
+            }
+        } /*../if POST..*/
+
+    } /*../end fun..*/
+
+    public function edit(Request $request, $id=0)
+    {
+        return null;
+        #prepare for back to url after SAVE#
+        if (!$request->session()->has('backurl')) {
+            $request->session()->put('backurl', redirect()->back()->getTargetUrl());
+        }
+
+        $obj_info=$this->obj_info;
+
+        $default=$this->default();
+        $js_config = $default['js_config'];
+        $allsizes = $default['sizes'];
+        $allcolors = $default['colors'];
+
+        $inncycle=$this->invcycle->listingModel($this->dflang[0])->pluck('title', 'id')->where('trash', '!=', 'yes');
+        $inncycle = json_decode(json_encode($inncycle), true);
+
+        $users=$this->users->listingModel($this->dflang[0])->pluck('name', 'id')->where('trash', '!=', 'yes');
+        $users = json_decode(json_encode($users), true);
+        $args = $this->args;
+
+        $input = null;
+       
+        
+        #Retrieve Data#
+        if (empty($id))
+        {
+            $editid = $this->args['routeinfo']['id'];
+        }
+        else
+        {
+            $editid = $id;
+        }
+
+        $input = $this->model->where($this->fprimarykey, (int)$editid)->where('trash', '!=', 'yes')->where('stage', '=', 0)->get();
+        if($input->isEmpty())
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.rqnvalid'));
+        }
+        
+
+        $input = $input->toArray()[0];
+
+
+        if((float) $input['paid']>0)
+        {
+            // //$routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            // $routing = redirect()->back()->getTargetUrl();
+            // return \Redirect::to($routing)
+            // ->with('tryid', $editid)
+            // ->with('ispaid', true);
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.rqnvalid'));
+        }
+        elseif((int)$input['stage']!=0)
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.rqnvalid'));
+        }
+        elseif((int)$input['trash']!='yes')
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.rqnvalid'));
+        }
+        elseif((int)$input['branch_id']!=$this->args['userinfo']['branch_id'])
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.nbltbranch'));
+        }
+
+        $oldadjuststock = Adjuststock::where($this->fprimarykey,$editid)->get()->toArray()[0];
+        $wh_id = $oldadjuststock['wh_id'];
+        if((int)$wh_id!=$this->args['userinfo']['wh_id'])
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.nbltwarehouse'));
+        }
+
+        #Customer
+        if(!empty($input['cm_id']))
+        {
+            $customer = Customer::where('cm_id', $input['cm_id'])->first();
+            $input['customer']=$customer->latinname;
+            $input['ct_id']=$customer->ct_id;
+           
+        }
+
+        #extract tag#
+        $data_tag = json_decode($input['tags'], TRUE);
+        $tag=[];
+        foreach ($data_tag as $key => $value) {
+            $tag[$key]=$value;
+        }
+
+        $input = array_merge($input, $tag);
+
+        $input['maindiscounttype']=1;
+        if($input['maindiscount']<0){
+            $input['maindiscount'] = abs($input['maindiscount']);
+            $input['maindiscounttype']=-1;
+        }
+
+        $input['inv_date'] = date("d-m-Y", strtotime($input['inv_date']));
+        $input['due_date'] = date("d-m-Y", strtotime($input['due_date']));
+
+
+        //dd($input);
+
+        /*Subform ===> Shall be a function*/
+        $subform = $this->RetrieveSubForm($this->invoices, $editid, $this->dflang[0]);
+        $input = array_merge($input, $subform);
+
+
+        skip:
+        return view('backend.v'.$this->obj_info['name'].'.create',
+                    compact('obj_info',
+                            'js_config',
+                            'allsizes',
+                            'allcolors',
+                            'inncycle',
+                            'users',
+                            'args',
+                            'input'
+                            )
+
+
+                )->with(
+                    [
+                        'submitto'      => 'update',
+                        'fprimarykey'   => $this->fprimarykey,
+                        'caption' => __('ccms.edit')
+                    ]
+                );
+    } /*../end fun..*/
+  
+    
+  public function quotation(Request $request, $id=0)
+    {
+        $quotation = new QuotationController($this->args);
+        #prepare for back to url after SAVE#
+        if (!$request->session()->has('backurl')) {
+            $request->session()->put('backurl', redirect()->back()->getTargetUrl());
+        }
+
+        $obj_info=$this->obj_info;
+
+        $default=$this->default();
+        $js_config = $default['js_config'];
+        $allsizes = $default['sizes'];
+        $allcolors = $default['colors'];
+
+        $dishnote = $default['dishnote'];
+        $accountno = $default['accountno'];
+        $paymentmethod = $default['paymentmethod'];
+
+        $inncycle=$this->invcycle->listingModel($this->dflang[0])->pluck('title', 'id')->where('trash', '!=', 'yes');
+        $inncycle = json_decode(json_encode($inncycle), true);
+
+        $users=$this->users->listingModel($this->dflang[0])->pluck('name', 'id')->where('trash', '!=', 'yes');
+        $users = json_decode(json_encode($users), true);
+        $args = $this->args;
+
+        $input = null;
+       
+        
+        #Retrieve Data#
+        if (empty($id))
+        {
+            $editid = $this->args['routeinfo']['id'];
+        }
+        else
+        {
+            $editid = $id;
+        }
+
+        $input = $quotation->model->where('qt_id', (int)$editid)->where('trash', '!=', 'yes')->get();
+        if($input->isEmpty())
+        {
+            $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
+            return \Redirect::to($routing)
+            ->with('errors', __('ccms.rqnvalid'));
+        }
+        
+
+        $input = $input->toArray()[0];
+
+        #Customer
+        if(!empty($input['cm_id']))
+        {
+            $customer = Customer::where('cm_id', $input['cm_id'])->first();
+            $input['customer']=$customer->latinname;
+            $input['ct_id']=$customer->ct_id;
+           
+        }
+
+        #extract tag#
+        $data_tag = json_decode($input['tags'], TRUE);
+        $tag=[];
+        foreach ($data_tag as $key => $value) {
+            $tag[$key]=$value;
+        }
+    
+        
+        
+
+        $input = array_merge($input, $tag);
+
+        $input['maindiscounttype']=1;
+        if($input['maindiscount']<0){
+            $input['maindiscount'] = abs($input['maindiscount']);
+            $input['maindiscounttype']=-1;
+        }
+        
+        $input['title'] = "General Invoice";
+        $input['inv_date'] = date("d-m-Y");
+        $input['due_date'] = date('d-m-Y', strtotime('+1 month', strtotime(date('d-m-Y'))));
+        $input['qoute_id'] = $editid;
+
+        //dd($input);
+
+        /*Subform ===> Shall be a function*/
+        $subform = $quotation->RetrieveSubForm($quotation->submodel, $editid, $this->dflang[0]);
+        $input = array_merge($input, $subform);
+
+
+        skip:
+        //////
+        $this->posobj = new PosController($args);
+        $results = $this->posobj->listingmodel();
+        
+        $this->posobj->rcdperpage = $this->positem_perpage;
+        $sfp = $this->posobj->sfp($request, $results);
+      
+        $this->productobj = new ProductController($args);
+        $categories=$this->productobj->model->getcategory($this->dflang[0])->get();
+        $category_list = $categories->pluck('title','c_id')->toArray();
+        $categories = json_decode(json_encode($categories), true);
+        $cat_tree=buildArrayTree($categories,['c_id','parent_id'],0);
+        $paymentmethod = Paymentmethod::where('trash', '!=', 'yes')->select('pmethod_id', 'title')->pluck('title', 'pmethod_id')->toArray();
+        
+        ////
+    
+         $theme='';
+        $displaymainmenu = false;
+        if(config('sysconfig.invtheme')=='t2'){
+          $theme = '_theme1';
+          $displaymainmenu = true;
+        }
+    
+        $quotation = new QuotationController($this->args);
+        $quotation_list = $quotation->indexapi($request);
+    
+        return view('backend.v'.$this->obj_info['name'].'.create'.$theme,
+                    compact('obj_info',
+                            'js_config',
+                            'allsizes',
+                            'allcolors',
+                            'inncycle',
+                            'users',
+                            'args',
+                            'input',
+                            'displaymainmenu',
+                            'cat_tree',
+                            'paymentmethod',
+                            'quotation_list',
+                            
+                             'accountno',
+                            'dishnote'
+                            
+                            )
+
+
+                )->with(
+                    [
+                        'submitto'      => 'store',
+                        'fprimarykey'   => $this->fprimarykey,
+                        'caption' => __('ccms.new')
+                    ]
+                )
+                ->with($sfp);
+    } /*../end fun..*/
+
+    public function validation($request, $isupdate=false){
+        //dd($request->input());
+        // validate
+            // read more on validation at http://laravel.com/docs/validation
+            $update_rules= [ $this->fprimarykey => 'required'];
+            $request->request->add(['branch_id' => $this->args['userinfo']['branch_id']??0]);
+            $request->request->add(['wh_id' => $this->args['userinfo']['wh_id']??0]);
+            $rules = [
+                        'title'      => 'required',
+                        //'cm_id'      => 'required',
+                        'inv_date'   => 'required',
+                        'due_date'   => 'required',
+                        'branch_id'   => 'required|numeric|gt:0',
+                        'wh_id'     => 'required|numeric|gt:0',
+                        
+                    ];
+            if(config('sysconfig.customermode')=='input'){
+              
+              $rules['customername'] = 'required';
+            }
+            else{
+              $rules['cm_id'] = 'required';
+            }
+      
+            /*IF Required Check-In*/
+            $withpayment = false;
+            if($request->has('withpayment'))
+            {
+                   $withpayment = true;
+            }
+      
+            $possave = false;
+            if($request->has('possave'))
+            {
+                   $possave = true;
+            }
+            
+            if(config('sysconfig.requiredchkin')=='yes' && ($withpayment || $possave)){
+              
+              $cashinout = Cashinout::chkrequestchkin($this->args['userinfo']['id'])->first();
+              $cashinout_lastid=0;
+              if($cashinout){
+                $cashinout_lastid = $cashinout->cashio_id;
+              }
+              
+              $request->request->add(['rqcheckin' => $cashinout_lastid]);
+              $rules['rqcheckin'] = 'required|numeric|gt:0';
+            }
+            
+
+            /*SUB*/
+            $subform = $request->input('subpd_id');
+            $numrecord=count($subform);
+            
+            //$numrecord= $numrecord==1?1:$numrecord-1;
+
+            if($numrecord>1)
+            {
+                $numrecord-=1;
+                array_pop($subform);
+
+            }
+
+            
+            for($i=0; $i<$numrecord; $i++)
+            {
+                    
+                    $rules['description.'.$i] = 'required';
+                    $rules['subqty.'.$i] = 'required|numeric|gt:0';
+                    $rules['unitprice.'.$i] = 'required|numeric|gt:0';
+                    
+            }
+
+            /*
+            | returntype is for Preview
+            */
+            
+            $chkpermission = checkpermission("pos-abrp", $this->args['userinfo']); // accept blank r.p.
+            if(!$chkpermission)
+            {
+              if($request->has('possave') && !$request->has('returntype'))
+              {
+                  //if(empty($request->input('pay_amountnative')))
+                  $rules['pay_amountusd'] = 'required|numeric';
+                  $rules['pay_amountnative'] = 'required|numeric';
+              }
+            }
+      
+            
+            
+
+            if($isupdate){
+                $rules=array_merge($rules, $update_rules);
+            }
+
+            $validatorMessages = [
+                //'required' => 'The :attribute field can not be blank.',
+                'required' => __('ccms.fieldreqire'),
+                'max' => __('ccms.madewith'),
+                'gt' =>  __('ccms.fieldreqire'),//__('ccms.gt')rcpayment
+                'pay_amountusd.required' => __('ccms.rcpayment'),
+                'pay_amountusd.gt' => __('ccms.rcpayment'),
+                'rqcheckin.required' => __('ccms.rqcheckin'),
+                'rqcheckin.gt' => __('ccms.rqcheckin')
+                
+            ];
+
+           /* $attribute = [
+                'title-en' => 'First Name'
+            ];*/
+            
+            /*$validator =Validator::make($request->input(), $rules, $validatorMessages, $attribute);*/
+            $validator =Validator::make($request->input(), $rules, $validatorMessages);
+
+            return $validator;
+
+    }/*../function..*/
+
+    public function setinfo($request, $isupdate=false){
+        //$request->request->add(['variable' => 'value']);
+        //dd($request);
+
+        
+        $newid=($isupdate)? $request->input($this->fprimarykey)  : $this->model->max($this->fprimarykey)+1;
+      
+       if(config('ccms.backend')=='lst')
+       {
+         $newid = $this->model->max($this->fprimarykey);
+         if(empty($newid)) $newid=191;
+         else $newid+=1;
+         
+         $newid=($isupdate)? $request->input($this->fprimarykey)  : $newid;
+         
+       }
+
+        $inv_date=!empty($request->input('inv_date'))?date("Y-m-d", strtotime($request->input('inv_date'))):date("Y-m-d");
+        if(!$isupdate)
+        {
+           

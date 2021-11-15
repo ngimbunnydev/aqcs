@@ -1,0 +1,11 @@
+.file_flash{float:left; background:url(imgs/flash.png) no-repeat center;width:150px; height:150px;}
+.file_media{float:left; background:url(imgs/media.png) no-repeat center;width:150px; height:150px;}
+.file_youtube{float:left; background:url(imgs/external.png) no-repeat center;width:150px; height:150px;}
+.file_sound{float:left; background:url(imgs/sound.png) no-repeat center;width:150px; height:150px;}
+.file_docs{float:left; background:url(imgs/docs.png) no-repeat center;width:150px; height:150px;}
+.file_txt{float:left; background:url(imgs/txt.png) no-repeat center;width:150px; height:150px;}
+.file_zip{float:left; background:url(imgs/zip.png) no-repeat center;width:150px; height:150px;}
+.file_noimage{float:left; background:url(imgs/nofile.png) no-repeat center;width:150px; height:150px;}
+
+
+.f_loader{float:left; background:url(imgs/preloader.gif) no-repeat center; width:100%; height:7px;}

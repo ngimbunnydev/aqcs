@@ -1,0 +1,665 @@
+@if(session('input'))
+	@php 
+		$inputdata=session('input');
+	@endphp
+
+@elseif(! empty($input))
+	@php 
+		$inputdata=$input;
+	@endphp
+@endif
+
+@if( ! empty($inputdata))
+	@foreach ($inputdata as $key => $val)
+	   @php ${$key}=$val; @endphp
+	@endforeach
+@endif
+
+
+
+@foreach (config('ccms.multilang') as $lang)
+	@php
+		$langcode[]=$lang[0];
+	@endphp
+@endforeach
+
+
+@extends('backend.layout')
+@section('header_import')
+	
+
+	<!--/******************
+	*	Add file manager plugin *
+	*******************/-->
+	@if (!session('ajax_access'))
+	<link rel="stylesheet" href="{{asset('app/Plugins/Splitjs/splitjs.css')}}" />
+	<!--JS Tree-->
+	<link rel="stylesheet" href="{{asset('app/Plugins/Jstree/dist/themes/default/style.min.css')}}" />
+	@endif
+
+@stop
+
+@section('footer_import')
+
+	<script src="{{asset('resources/views/backend/lib/js/listener.js')}}"></script>
+
+	<script src="{{asset('/resources/assets/arcetheme/js/spinbox.min.js')}}"></script>
+	 <script type="text/javascript">
+		$( document ).ready(function() {
+
+			$('.ordering0').each(function(i, obj) {
+				$(this).ace_spinner({value:0,min:0,step:1, btn_up_class:'btn-info' , btn_down_class:'btn-info'});
+
+			});
+			
+			
+
+	});
+
+		
+
+  </script>
+	
+	<!--/******************
+	*	Add file manager plugin *
+	*******************/-->
+	@if (!session('ajax_access'))
+	<script src="{{asset('app/Plugins/Filemanager/jsfun.js')}}"></script>
+	<script src="{{asset('app/Plugins/Jstree/dist/jstree.min.js')}}"></script>
+	<script src="{{asset('app/Plugins/Splitjs/split.min.js')}}"></script>
+	<!-- Alert Panel (looks like js confrm dialog)-->
+  	<script src="{{asset('/resources/assets/arcetheme/js/bootbox.js')}}"></script>
+	<script src="{{asset('app/Plugins/twbs-pagination/jquery.twbsPagination.js')}}"></script>
+	<script>
+		Split(['#file_category', '#file_listing'], {
+			sizes: [24, 76],
+			minSize: 200
+		});
+	</script>
+	@endif
+	<script>
+		var filemanagerSetting={};
+		var givent_txtbox;
+		var editorContext; /*global variable for store Summernote object when v try to insert image*/
+
+		
+		/**-Browse File button @ each object-**/
+
+
+		$(document).on("click", "#btn-browe-scrsh", function (e) {
+		    ///
+		    	e.preventDefault();
+
+				filemanagerSetting=jsconfig.filemanagerSetting;
+				filemanagerSetting.displaymode=2;
+				filemanagerSetting.filetype='image';
+				filemanagerSetting.givent_txtbox='object';
+				givent_txtbox=$(this).parent().parent().children('#image');
+				categoryid=$('#filecategory').val();
+				openMediaPanel(categoryid);
+		    ///
+		});
+
+		
+	</script>
+	<!--/*end file manager*/-->
+
+
+	<script>
+
+	 	$( "#btnAdd" ).click(function() {
+		 	var newitemid='newid';
+		  	add_item(newitemid);
+
+		  	$('#ordering'+newitemid).ace_spinner({value:0,min:0,step:1, btn_up_class:'btn-info' , btn_down_class:'btn-info'})
+					.closest('.ace-spinner')
+					.on('changed.fu.spinbox', function(x,y){
+						//console.log($('#ordering').val())
+					});
+
+			$('#ordering'+newitemid).removeAttr('id');
+	  		
+		});
+
+		$(document).on("change", "#tab_title", function (ev) {
+		    ///
+		    	var $value=$(this).val();
+	  			enableDisableByLang($(this),{!!json_encode($langcode,true)!!},'title-',$value)
+		    ///
+		});
+
+		$(document).on("change", "#tab_moduletitle", function (ev) {
+		    ///
+		    	var $value=$(this).val();
+	  			enableDisableByLang($(this),{!!json_encode($langcode,true)!!},'moduletitle-',$value)
+		    ///
+		});
+
+		$(document).on("click", ".removeButton", function (ev) {
+		    ///
+		    	var $row  = $(this).parents('.table_row');
+                $row.remove();
+		    ///
+		});
+
+
+  </script>
+
+
+  <script>
+  	
+  	function add_item(new_id){
+        var $template = $('#recordTemplate'),
+		$clone    = $template
+                .clone()
+                .removeClass('hide')
+                .removeAttr('id')
+                .insertAfter('.tablediv .table_row:last');                        
+                                
+                            
+                           
+        $clone
+        .find("#ordering").attr( 'id', 'ordering'+new_id).end()
+	}
+
+
+  </script>
+
+
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			@if (session('errors'))
+				$.gritter.add({
+								title: 'Error:',
+								text: '<strong><i class="ace-icon fa fa-exclamation-triangle"></i></strong> {{ session('errors') }}',
+								sticky: true,
+								class_name: 'gritter-error gritter-center'
+							});
+			@endif
+
+			@if (session('success'))
+				$.gritter.add({
+								title: 'Success:',
+								text: '<strong><i class="ace-icon fa fa-check-square-o"></i></strong> {{ session('success') }}',
+								sticky: false,
+								class_name: 'gritter-success gritter-center'
+							});
+
+			@endif
+
+		});
+	</script>
+	
+	
+@stop	
+
+
+@section('app')
+
+<!-- /...........................................................page-header -->	
+
+<div class="page-header" data-spy="affix" data-offset-top="60">
+<div class="row">
+	<div class="col-xs-12 col-sm-6 col-lg-6">
+	<h1>
+				{!! $obj_info['icon'] !!}
+				<a href="{{url_builder($obj_info['routing'],[$obj_info['name'],'index'])}}">
+					{!! $obj_info['title'] !!}
+				</a>
+		<small>
+			<i class="ace-icon fa fa-angle-double-right"></i>
+			{{$caption}}
+		</small>
+	</h1>
+	</div>
+	<div class="col-xs-12 col-sm-6 col-lg-6">
+		@include('backend.widget.btnaa',['btnsave' => 'yes', 'btnnew' => 'yes', 'btnapply' => 'yes', 'btncancel' => 'yes'])							
+	</div>									
+</div>	
+							
+										
+</div>						
+<!-- /...........................................................page-header -->	
+
+<!-- /...........................................................Message status -->
+
+@php
+	$records=1;
+@endphp
+@if(!empty($mds_id))
+	@php
+		$records=count($mds_id);
+	@endphp
+@endif
+
+<form name="frmadd-{{$obj_info['name']}}" id="frmadd-{{$obj_info['name']}}" method="POST" action="{{ url_builder($obj_info['routing'],[$obj_info['name'],$submitto]) }}" enctype="multipart/form-data">
+{{ csrf_field() }}	
+
+	
+
+	@if (session('ajax_access'))
+		@if(!empty(\Request::get('ajaxnext')))
+		@php
+			$ajaxnext_val=\Request::get('ajaxnext');
+		@endphp	
+		@elseif(!empty($ajaxnext))
+			@php
+				$ajaxnext_val=$ajaxnext;
+			@endphp	
+					
+		@endif
+		<input type="text" name="ajaxnext" value="{{$ajaxnext_val}}">	
+	@endif			
+								
+<div class="row">
+	<div class="col-xs-12 col-sm-12 col-lg-12">
+		<span class="frm-label"><span class="red">*</span> @lang('ccms.isrequire')</span><br><br>
+	</div>
+
+	<div class="col-xs-12 col-sm-3 col-lg-3">
+		
+		<div class="">
+			<input type="hidden" name="{{$fprimarykey}}" id="{{$fprimarykey}}" value="{{ ${$fprimarykey} ?? '' }}">	
+			<label class="frm-label" for="modulename">Name<span class="red">*</span></label>	
+			<input type="text" class="form-control input-sm" name="modulename" id="modulename" value="{{ $modulename ?? '' }}">
+		</div>
+	</div>
+
+	<div class="col-xs-12 col-sm-3 col-lg-3">
+		<label class="frm-label">Title<span class="red">*</span></label>
+		<div class="input-group my-group" style="width:100%;"> 
+
+	            			<select id="tab_moduletitle" class="form-control input-sm" style="width:25%;">
+	                        @foreach (config('ccms.multilang') as $lang)
+		                        <option value="@lang($lang[0])">@lang($lang[1])</option>
+		                    @endforeach
+	                        
+	                    	</select>
+
+	                    	@php ($active = '') @endphp
+	                    	@foreach (config('ccms.multilang') as $lang)
+	                    	<input type="text" class="form-control input-sm {{$active}}" style="width:75%;" name="moduletitle-{{$lang[0]}}" id="moduletitle-{{$lang[0]}}" placeholder="{{$lang[1]}}" value="{{ ${'moduletitle-'.$lang[0]} ?? '' }}">
+	                    	@php ($active = 'hide') @endphp
+	                    	@endforeach
+
+	        			</div>
+
+
+		
+		
+	</div>
+
+	<div class="col-xs-12 col-sm-3 col-lg-3">
+		<label class="frm-label " for="moduletype">
+				Module Type
+			</label>
+		<select class="en label_b form-control input-sm" name="moduletype">
+							@php
+								$select= isset($moduletype)?[$moduletype]:[];
+
+								$disable = -1;
+							@endphp
+
+							{!!cmb_listing(['object'=>'Object', 'form'=>'Form'],$select,$disable,'')!!} 
+						</select>
+	</div>
+
+	<div class="col-xs-12 col-sm-3 col-lg-3">
+		
+		<div class="">
+			<label class="frm-label" for="modulename">Icon ({{'<i class="menu-icon fa fa-bullhorn"></i>'}})</label>	
+			<input type="text" class="form-control input-sm" name="icon" id="modulename" value="{{ $icon ?? '' }}">
+			
+		</div>
+	</div>
+
+	
+
+	
+
+	<div class="col-xs-12 col-sm-12 col-lg-12">
+		<!-- <div class="row"> -->
+			<br>
+			<!-- <div class="col-xs-6 col-sm-3 col-lg-2"> -->
+			<label class="frm-label" for="description">Description
+				@php
+					$checked = (isset($description) && $description=='yes')? 'checked="checked"' : '';
+				@endphp
+				<input type="checkbox" name="description" value="yes" {!!$checked!!}>
+			</label>
+			{!!str_repeat('&nbsp;',5)!!}
+			<!-- </div> -->
+			
+			<!-- <div class="col-xs-6 col-sm-3 col-lg-2"> -->
+			<label class="frm-label " for="media">
+				Media
+				@php
+					$checked = (isset($media) && $media=='yes')? 'checked="checked"' : '';
+				@endphp
+				<input type="checkbox" name="media" value="yes" {!!$checked!!}>
+			</label>
+			{!!str_repeat('&nbsp;',5)!!}
+			<!-- </div> -->
+
+
+
+			<!-- <div class="col-xs-6 col-sm-3 col-lg-2"> -->
+			<label class="frm-label " for="acategory">
+				Setting
+				@php
+					$checked = (isset($setting) && $setting=='yes')? 'checked="checked"' : '';
+				@endphp
+				<input type="checkbox" name="setting" value="yes" {!!$checked!!}>
+			</label>
+			{!!str_repeat('&nbsp;',5)!!}
+			<!-- </div> -->
+
+			<!-- <div class="col-xs-6 col-sm-3 col-lg-2"> -->
+			<label class="frm-label " for="acategory">
+				Category
+				@php
+					$checked = (isset($acategory) && $acategory=='yes')? 'checked="checked"' : '';
+				@endphp
+				<input type="checkbox" name="acategory" value="yes" {!!$checked!!}>
+			</label>
+			{!!str_repeat('&nbsp;',5)!!}
+			<!-- </div> -->
+
+			<!-- <div class="col-xs-6 col-sm-3 col-lg-2"> -->
+			<label class="frm-label " for="meta">
+				Meta
+				@php
+					$checked = (isset($meta) && $meta=='yes')? 'checked="checked"' : '';
+				@endphp
+			</label>
+			<input type="checkbox" name="meta" value="yes" {!!$checked!!}>
+			<!-- </div> -->
+		<!-- </div> --><!--/.row-->
+
+
+	</div>
+
+	
+
+
+	<div class="col-xs-12 col-sm-12 col-lg-12">
+		<div class="tablediv" id="results">
+            <div class='theader'>
+			  
+
+			  <div class='table_header'>Attribute</div>
+			  <div class='table_header'>Title <span class="red">*</span></div>
+			  <div class='table_header'>Datalist</div>
+			  <div class='table_header'>Display</div>
+			  <div class='table_header'>Validator</div>
+			  <div class='table_header'>Placeholder</div>
+			  <div class='table_header'>As Column</div>
+			  <div class='table_header'>&nbsp;</div>
+			</div> 
+
+			@for ($i = 0; $i < $records; $i++)
+            <div class='table_row'>
+
+
+            	 <div class='table_small'>
+                              
+                    <div class='table_cell'>Attribute</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="attribute[]">
+							{!!cmb_listing(config('ccms.attribute'),[$attribute[$i] ?? ''],'','')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+
+
+			    <div class='table_small'>
+                              
+                    <div class='table_cell'>Title <span class="red">*</span></div>
+					<div class='table_cell'>
+						<input type="hidden" name="mds_id[]" id="mds_id" value="{{$mds_id[$i] ?? ''}}">	
+						<div class="input-group" style="width:100%;"> 
+
+	            			<select id="tab_title" class="form-control input-sm" style="width:25%;">
+	                        @foreach (config('ccms.multilang') as $lang)
+		                        <option value="@lang($lang[0])">@lang($lang[1])</option>
+		                    @endforeach
+	                        
+	                    	</select>
+
+	                    	@php ($active = '') @endphp
+	                    	@foreach (config('ccms.multilang') as $lang)
+	                    	<input type="text" class="form-control input-sm {{$active}}" style="width:75%;" name="title-{{$lang[0]}}[]" id="title-{{$lang[0]}}" placeholder="{{$lang[1]}}" value="{{ ${'title-'.$lang[0]}[$i] ?? '' }}">
+	                    	@php ($active = 'hide') @endphp
+	                    	@endforeach
+
+	        			</div>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+               
+
+
+                 <div class='table_small'>
+                              
+                    <div class='table_cell'>Datalist</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="dl_id[]">
+							<option></option>
+							@php
+								$select= isset($dl_id[$i])?[$dl_id[$i]]:[];
+
+								$disable = -1;
+							@endphp
+
+							{!!cmb_listing($datalists,$select,$disable,'')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Display</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="display[]">
+							@php
+								$select= isset($display[$i])?[$display[$i]]:[];
+
+								$disable = -1;
+							@endphp
+
+							{!!cmb_listing(['yes'=>'Yes', 'no'=>'No'],$select,$disable,'')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Validator</div>
+					<div class='table_cell'>
+						<input type="text" class="form-control input-sm" name="validator[]" value="{{ $validator[$i] ?? '' }}">
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Placeholder</div>
+					<div class='table_cell'>
+						<input type="text" class="form-control input-sm" name="placeholder[]" value="{{ $placeholder[$i] ?? '' }}">
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>As Column</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="as_column[]">
+							@php
+								$select= isset($as_column[$i])?[$as_column[$i]]:[];
+
+								$disable = -1;
+							@endphp
+
+							{!!cmb_listing(['no'=>'No', 'yes'=>'Yes'],$select,$disable,'')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>&nbsp;</div>
+					<div class='table_cell'>
+						@if($i==0)
+							<button type="button" value="" class="btn btn-default btn-sm" style="height: 30px">&nbsp;</button>
+						@else
+							<button type="button" value="" class="btn btn-default btn-sm removeButton" style="height: 30px"><i class="fa fa-minus"></i></button>
+						@endif
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+			</div><!-- /.row --> 
+
+
+            @endfor
+
+
+        </div><!-- /.table -->
+
+	</div> <!-- /.col1 -->
+
+	
+	<div class="col-xs-12 col-sm-12 col-lg-12" style="text-align: right; padding-top: 10px">
+		<button type="button" id="btnAdd" value="" class="btn btn-default btn-sm" style="height: 30px"><i class="fa fa-plus"></i></button>
+	</div> <!-- /.col2 -->
+	
+
+</div>
+</form>
+
+
+<!-- write for cloen-->
+            <div class='table_row hide' id='recordTemplate'>
+
+            	<div class='table_small'>
+                              
+                    <div class='table_cell'>Attribute</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="attribute[]">
+							{!!cmb_listing(config('ccms.attribute'),[],'','')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+
+			    <div class='table_small'>
+                              
+                    <div class='table_cell'>Title</div>
+					<div class='table_cell'>
+						<input type="hidden" name="mds_id[]" id="mds_id" value="">	
+						<div class="input-group my-group" style="width:100%;"> 
+
+	            			<select id="tab_title" class="form-control input-sm" style="width:25%;">
+	                        @foreach (config('ccms.multilang') as $lang)
+		                        <option value="@lang($lang[0])">@lang($lang[1])</option>
+		                    @endforeach
+	                        
+	                    	</select>
+
+	                    	@php ($active = '') @endphp
+	                    	@foreach (config('ccms.multilang') as $lang)
+	                    	<input type="text" class="form-control input-sm {{$active}}" style="width:75%;" name="title-{{$lang[0]}}[]" id="title-{{$lang[0]}}" placeholder="{{$lang[1]}}" value="">
+	                    	@php ($active = 'hide') @endphp
+	                    	@endforeach
+
+	        			</div>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Datalist</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="dl_id[]">
+							<option></option>
+
+							{!!cmb_listing($datalists,[],'','')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Display</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="display[]">
+							{!!cmb_listing(['yes'=>'Yes', 'no'=>'No'],[],'','')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Validator</div>
+					<div class='table_cell'>
+						<input type="text" class="form-control input-sm" name="validator[]">
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>Placeholder</div>
+					<div class='table_cell'>
+						<input type="text" class="form-control input-sm" name="placeholder[]">
+					</div>          
+                                   
+                </div><!-- /.cell -->
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>As Column</div>
+					<div class='table_cell'>
+						<select class="en label_b form-control input-sm" name="as_column[]">
+							{!!cmb_listing(['no'=>'No', 'yes'=>'Yes'],[],'','')!!} 
+						</select>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+
+                <div class='table_small'>
+                              
+                    <div class='table_cell'>&nbsp;</div>
+					<div class='table_cell'>
+						<button type="button" value="" class="btn btn-default btn-sm removeButton" style="height: 30px"><i class="fa fa-minus"></i></button>
+					</div>          
+                                   
+                </div><!-- /.cell --> 
+
+			</div><!-- /.row -->
+
+
+
+@stack('plugin')
+	@if (!session('ajax_access'))
+		@include('Filemanager.manager')
+	@endif
+@stop
+
+
+								
+

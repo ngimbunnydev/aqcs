@@ -1,0 +1,1 @@
+<strong><i class="ace-icon fa fa-check-square-o"></i></strong> {{ session('success') }}

@@ -1,0 +1,99 @@
+﻿.pager
+{
+    width: 916px;
+    padding: 5px;
+    margin: 0;
+}
+.pager div.short
+{
+    float: right;
+    margin: 0;
+    padding: 0;
+    margin-right: 10px;
+    width: 74px;
+	
+}
+.pager div.short input
+{
+    width: 28px;
+    height: 18px;
+    border: none;
+    margin-left: 8px;
+    float: left;
+	display:none;
+}
+.pager ul
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    float: left;
+    margin-right: 4px;
+}
+.pager ul li
+{
+    display: inline;
+    margin-left: 2px;
+}
+.pager ul li a
+{
+    text-decoration: none;
+    display: inline-table;
+	padding-top:3px;
+    width: 20px;
+    height: 17px;
+    text-align: center;
+}
+
+.pager span
+{
+    margin-left: 4px;
+    color: #2e6ab1;
+    float: left;
+	padding-top:5px;
+}
+.pager .btn
+{
+    display: block;
+    width: 40px;
+    text-align: center;
+    float: left;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px;
+    cursor: pointer;
+   
+    user-select: none;
+}
+.pager .disabled
+{
+    color: #929292 !important;
+	border: solid 1px #929292 !important;
+	background:none !important;
+}
+
+/*red*/.red
+{
+    background-color: #e5edf7;
+}
+.red.normal
+{
+    background-color: none;
+    color: #2e6ab1;
+    border: solid 1px #9aafe5;
+}
+.red.active
+{
+    background-color: navy;
+    color: White;
+    border: solid 1px #2e6ab1;
+}
+.pager.red .btn
+{
+    background-color: lightyellow;
+    color: #2e6ab1;
+    border: solid 1px #9aafe5;
+	padding-top:3px;
+    height: 17px;
+	
+}
