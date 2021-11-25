@@ -17,3 +17,5 @@ Homestead.json
 /.vagrant
 /resources/filelibrary
 /resources/fileprivate
+/config
+/routes

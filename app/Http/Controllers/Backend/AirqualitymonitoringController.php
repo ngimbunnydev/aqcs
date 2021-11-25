@@ -1290,5 +1290,113 @@ class AirqualitymonitoringController extends Controller
           ];
     }
 
+    public function storeapi(Request $request)
+    {
+        //dd($request->all());
+        //dd(json_decode($request->getContent(), true));
+        $apidata = json_decode($request->getContent(), true);
+        $tableData = [];
+        $tableDataId= [];
+        $subtableData=[];
+        $paramenters = [];
+        if(!empty($apidata)){
+            $devices = Device::select(\DB::raw("device_id, device_index"
+            ))->get()->keyby('device_index')->toArray();
+
+            $airtypes = Airtype::select(\DB::raw("airtype_id, code"
+            ))->get()->keyby('code')->toArray();
+
+            $newid= $this->model->max($this->fprimarykey);
+            foreach($apidata as $row){
+                
+                $device_code = $row['DeviceID'] ?? '';
+                $device_id = $devices[$device_code]['device_id']??0;
+                //$record_datetime =  !empty($row['DateTime'])?gmdate("Y-m-d H:i", ExcelDateToUnix($row['DateTime'])):'';
+                $stringdate = !empty($row['DateTime'])?str_replace(".0Z","", $row['DateTime']):'';
+                $record_datetime = !empty($stringdate)?date("Y-m-d H:i:s", strtotime($stringdate)):'';
+                if(!empty($device_id) && !empty($record_datetime)){
+                    $newid +=1;
+                    /*for sub records*/
+                        foreach($airtypes as $code => $items){
+                            
+                            $airtype_id = $items['airtype_id']??0;
+                            $subrecord = [
+                                'aqmd_id' => 0,
+                                $this->fprimarykey => $newid,
+                                'airtype_id' => $airtype_id,
+                                'airtype_code' => $code??'',
+                                'air_qty' => $row[$code] ?? 0,
+                                'display' => 1,
+                                'ordering' => 0,
+                                'tag' => '',
+                
+                            ];
+                            $paramenters[$aritype_code??''] = $row[$code] ?? 0;
+                            array_push($subtableData, $subrecord);
+                            
+                        }
+                        /*end sub*/
+                    
+                    $tableDataId[]=$newid;
+                    $record = [
+                            $this->fprimarykey => $newid,
+                            'device_id' => $device_id,
+                            'device_code' => $device_code,
+                            'tempreture' => '',
+                            'humidity' => '',
+                            'status' => 'yes',
+                            'record_datetime' => $record_datetime,
+                            'ordering' => 0,
+                            'paramenters' => json_encode($paramenters),
+                            'tag' => '',
+                            'trash' => 'no',
+                            'add_date' => date('Y-m-d'),
+                            'blongto' => $this->args['userinfo']['id'],
+            
+                        ];
+                        
+                        array_push($tableData, $record);
+                }
+                
+              }
+
+            ////////
+        }
+
+        $savedata = false;
+          if(!empty($tableData) && !empty($subtableData)){
+            $savedata = $this->model->insert($tableData);
+          }
+       
+          if($savedata){
+            $savesub = Airqualitydetail::insert($subtableData);
+            if(!$savesub)
+            {
+                      $savedata= false;
+                      $destroyinv = $this->model->whereIn($this->fprimarykey, $tableDataId)->delete(); 
+                      return [
+                        'act' => false,
+                        'url' => $routing,
+                        'errors' => __('ccms.rqnvalid'),
+                    ];
+
+            }
+
+            $success_ms = __('ccms.suc_save');
+            $return = [
+                    'status' => $savedata,
+                    'success' => $success_ms,
+                ];
+  
+            return json_encode($return);
+          }
+          
+          return response()->json([
+              'act' => false,
+              'errors' => $validator->errors()->first(),
+          ]); 
+
+    }
+
     
 }

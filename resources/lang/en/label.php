@@ -103,6 +103,7 @@ return [
   'view' => 'View',
   'create' => 'Create',
   'new' => 'New',
+  'chart' => 'Chart',
   
   /*
   |Navegator and Object
@@ -146,7 +147,8 @@ return [
   'aqm' => 'Air Quality Monintoring',
   'quality' => 'Quality',
   'datetime'  => 'Date-Time',
-  
+  'report' => 'Report',
+  'livedata' => 'Live Data',
 ];
 
 

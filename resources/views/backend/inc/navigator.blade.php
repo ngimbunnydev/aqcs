@@ -205,6 +205,42 @@
 
 				</ul>
 			</li>
+
+			{{-- Report --}}
+			<li class="{{nav_checkactive(['livedata'],$obj_info['name'],'open')}}">
+				<a href="#" class="dropdown-toggle">
+					<i class="menu-icon"><i class="fa fa-cog"></i></i>
+					<span class="menu-text">
+						@lang('label.report')
+					</span>
+
+					<b class="arrow fa fa-angle-down"></b>
+				</a>
+
+				<b class="arrow"></b>
+
+				<ul class="submenu">
+
+					
+
+					
+
+
+					<li class="showhidemenu {{nav_checkactive(['livedata'],$obj_info['name'])}}">
+						<a href="{{ url_builder('admin.controller',['livedata']) }}">
+							<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
+							@lang('label.livedata')
+						</a>
+
+						<b class="arrow"></b>
+					</li>
+
+					
+	   
+				   
+				</ul>
+			</li>
+			{{-- End report --}}
             
                     
                     
@@ -256,36 +292,8 @@
 							</li>
 
 
-							<li class="showhidemenu {{nav_checkactive(['systemconfig'],$obj_info['name'])}}">
-								<a href="{{ url_builder('admin.controller',['systemconfig']) }}">
-									<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
-									@lang('label.lb14')
-								</a>
-
-								<b class="arrow"></b>
-							</li>
-
-             
               
-							<li class="showhidemenu {{nav_checkactive(['general'],$obj_info['name'])}}">
-								<a href="{{ url_builder('admin.controller',['general']) }}">
-									<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
-									@lang('label.lb15')
-								</a>
-
-								<b class="arrow"></b>
-							</li>
-              
-                @if(beta())
-               <li class="showhidemenu {{nav_checkactive(['backup'],$obj_info['name'])}}">
-								<a href="{{ url_builder('admin.controller',['backup']) }}">
-									<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
-									@lang('label.lb228')
-								</a>
-
-								<b class="arrow"></b>
-							</li>
-              @endif
+               
                            
 						</ul>
 					</li>
