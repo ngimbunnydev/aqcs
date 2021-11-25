@@ -14,7 +14,7 @@ class Branch extends Model
     /*protected $fillable = array(
         'name',
         'artist',
-        'price'
+        'price' aaa
     );*/
 
     public function scopeGettable()
