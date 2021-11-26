@@ -257,7 +257,7 @@ class BenchmarkController extends Controller
                 ->with(['trash'=>true])
                 ->with(['caption' => __('ccms.bin')]);
 
-    } /*../function..*/
+    } /*../function...*/
 
     public function create(Request $request)
     {
