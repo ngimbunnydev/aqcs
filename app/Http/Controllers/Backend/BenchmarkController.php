@@ -244,12 +244,7 @@ class BenchmarkController extends Controller
         $results = $results->where('aqcs_device.trash', '=', 'yes');
         $sfp = $this->sfp($request, $results);
 
-        return view('backend.v'.$this->obj_info['name'].'.index', 
-                    compact(
-                        'evaluation', 
-                        'airtype',
-                        'colors',
-                    )
+        return view('backend.v'.$this->obj_info['name'].'.index', compact('evaluation', 'airtype','colors')
                 )
                 ->with(['act' => 'trash'])
                 ->with(['obj_info' => $obj_info])
