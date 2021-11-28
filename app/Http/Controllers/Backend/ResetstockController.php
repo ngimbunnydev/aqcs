@@ -19,7 +19,7 @@ use App\Models\Backend\Location;
 
 
 
-use App\Http\Controllers\Backend\SystemconfigController;
+//use App\Http\Controllers\Backend\SystemconfigController;
 
 class ResetstockController extends Controller
 {
@@ -27,7 +27,7 @@ class ResetstockController extends Controller
     public function __construct(array $args){ //public function __construct(Array args){
 
         $this->args = $args;
-        $systemconfig = new SystemconfigController($args);
+        //$systemconfig = new SystemconfigController($args);
 
     } /*../function..*/
     public function index()
