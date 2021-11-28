@@ -208,7 +208,7 @@ class EvaluationController extends Controller
 
         return view('backend.v'.$this->obj_info['name'].'.create',
                     compact('obj_info',
-                            'js_config',
+                            'js_config'
                             )
 
 
