@@ -252,6 +252,7 @@ class UserlevelController extends Controller
 
         $obj_info=$this->obj_info;
         $definelevel = $this->definelevel;
+        //dd($definelevel);
         return view('backend.v'.$this->obj_info['name'].'.create',
                     compact(
                             'obj_info',
