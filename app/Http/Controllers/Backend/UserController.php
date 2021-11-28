@@ -10,7 +10,6 @@ use Validator;
 use App\Models\Backend\Users;
 use App\Models\Backend\Userlevel;
 use App\Models\Backend\Branch;
-use App\Models\Backend\Warehouse;
 //use App\Http\Controllers\Backend\ModulesController;
 
 
@@ -102,8 +101,7 @@ class UserController extends Controller
         $ctype = Userlevel::where('trash', '!=', 'yes')->select('level_id', 'title')->pluck('title', 'level_id')->toArray();
         $branch = Branch::where('trash', '!=', 'yes')->select(\DB::raw("branch_id, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
                                                 ))->pluck('title', 'branch_id')->toArray();
-        $warehouse = Warehouse::where('trash', '!=', 'yes')->select(\DB::raw("wh_id, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
-                                                ))->pluck('title', 'wh_id')->toArray();
+        $warehouse = [];
         
         return ['js_config'=>$js_config, 'ctype'=>$ctype, 'branch' => $branch, 'warehouse'=> $warehouse];
     } /*../function..*/
