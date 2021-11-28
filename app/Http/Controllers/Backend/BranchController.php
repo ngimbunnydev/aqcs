@@ -289,7 +289,8 @@ class BranchController extends Controller
               $allow_num= $count_existing+1;
             }
           
-            if ($validator->fails() || $count_existing>=$allow_num) {
+            if ($validator->fails()) {
+                //if ($validator->fails() || $count_existing>=$allow_num) {
 
                 $routing=url_builder($obj_info['routing'],[$obj_info['name'],'create']);
                 $errors_msg = $validator->errors()->first();
