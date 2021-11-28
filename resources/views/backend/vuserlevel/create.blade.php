@@ -182,6 +182,7 @@
 
 												<div class="panel-collapse collapse" id="{{$class['name']}}">
 													<div class="panel-body">
+														@if($class['protectme'])
 														@foreach($class['protectme'] as $method)
 															@if (!in_array($method[1], $added))
 																@php
@@ -200,6 +201,7 @@
 																</div>
 															@endif
 														@endforeach
+														@endif
 													</div>
 												</div>
 											</div>
