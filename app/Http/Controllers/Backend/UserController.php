@@ -30,7 +30,7 @@ class UserController extends Controller
 
 
 	public function __construct(array $args){ //public function __construct(Array args){
-    $this->obj_info['title'] = __('label.lb21');
+    $this->obj_info['title'] = __('label.lb11');
         $this->protectme = [  
                         config('ccms.protectact.index'),
                         config('ccms.protectact.create'),

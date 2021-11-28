@@ -28,7 +28,7 @@ class UserlevelController extends Controller
 
 	public function __construct(array $args){ //public function __construct(Array args){
     
-    $this->obj_info['title'] = __('label.lb40');
+    $this->obj_info['title'] = __('label.lb12');
         $this->protectme = [  
                         config('ccms.protectact.index'),
                         config('ccms.protectact.create'),
