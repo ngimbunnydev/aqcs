@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
+use PDF;
+
 class DashboardController extends Controller
 {
 	private $obj_info=['name'=>'home','title'=>'Dashboard','routing'=>'admin.controller','icon'=>'<i class="fa fa-cubes" aria-hidden="true"></i>'];
@@ -21,6 +23,42 @@ class DashboardController extends Controller
     return $blade;
 
 	}
+
+  public function pdfgenerate(Request $request, $id=0){
+       
+            $format = [
+              'mode'                 => '',
+              'format'               => array(80,1440),
+              'orientation'          => 'P',
+              'margin_left'          => 10,
+              'margin_right'         => 10,
+              'margin_top'           => 0,
+              'margin_bottom'        => 20,
+              'margin_header'        => 0,
+              'margin_footer'        => 10,
+             
+              
+          ];
+          $data = ['obj_info' => $this->obj_info];
+          $blade = 'backend.dashboard';
+            $pdf = PDF::loadView($blade, $data,[],$format);
+
+            $option = 1;
+            $pdftitle = 'abc';
+           if($option==1)
+                return $pdf->stream($pdftitle.'.pdf');
+            else
+                return $pdf->download($pdftitle.'.pdf');
+            
+        //end
+
+    
+
+
+
+    
+    
+}/*../function..*/
   
   
 
@@ -131,7 +169,37 @@ class DashboardController extends Controller
   
   
   
-  
+  /*
+option = {
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      data: [120, 200, 150, 80, 70, 110, 130],
+      type: 'bar',
+      showBackground: true,
+      backgroundStyle: {
+        color: 'rgba(180, 180, 180, 0.2)'
+      },
+      markLine: {
+                  symbol:"none",
+                 data: [{name: 'Standard', yAxis: 100}],
+                 lineStyle: {
+                    color: 'red',
+                    type: 'solid',
+                    width: 3
+                },
+            }
+    }
+  ]
+};
+
+  */
   
   
   
