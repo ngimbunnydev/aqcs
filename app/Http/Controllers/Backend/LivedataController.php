@@ -70,14 +70,13 @@ class LivedataController extends Controller
                                                 ))->get()->keyBy('airtype_id')->toArray();
       
         $device_qry = Device::
-        join('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
+        leftjoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
         ->where('branch_id', $branchcondition , $this->args['userinfo']['branch_id']??0)
         ->where('aqcs_device.trash', '!=', 'yes')
-        ->select(\DB::raw("device_id, aqcs_device.code as code, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as title"
+        ->select(\DB::raw("aqcs_location.location_id as location_id,device_id, aqcs_device.code as code, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as title"
     ));
-        $device = $device_qry->pluck('title', 'device_id')->toArray();
-        $device_first = $device_qry->first()->toArray();
-        $devicewithcode = $device_qry->get()->keyBy('device_id')->toArray();
+        $device = $device_qry->get()->toArray();
+        $device_first = $device_qry->first()?$device_qry->first()->toArray():[];
 
         $location = Location::
         where('trash', '!=', 'yes')
@@ -93,7 +92,6 @@ class LivedataController extends Controller
         'airtype' => $airtype, 
         'device' => $device, 
         'location' => $location,
-        'devicewithcode' => $devicewithcode,
         'device_first' => $device_first,
         ];
 
@@ -106,19 +104,15 @@ class LivedataController extends Controller
         if(empty($this->args['userinfo']['branch_id']))
         {$branchcondition='<>';}
 
-        $last_quality = $this->model
-        ->select('aqm_id')
-        ->orderby('record_datetime', 'desc')
-        ->first()->toArray();
       
         #DEFIND MODEL#
         return $this->model
         ->join('aqcs_airqmdetail','aqcs_airqm.aqm_id', '=', 'aqcs_airqmdetail.aqm_id')
         ->join('aqcs_airtype','aqcs_airqmdetail.airtype_id', '=', 'aqcs_airtype.airtype_id')
-        ->select(\DB::raw("aqcs_airqm.aqm_id AS id,  air_qty, record_datetime,
+        ->select(\DB::raw("aqcs_airqm.aqm_id AS id,  air_qty, standard_qty, record_datetime,
         JSON_UNQUOTE(aqcs_airtype.title->'$.".$this->dflang[0]."') AS title"
-                                                ))
-        ->where('aqcs_airqm.aqm_id', $last_quality['aqm_id']);
+    ));
+        //->where('aqcs_airqm.aqm_id', $last_quality['aqm_id']);
     } /*../function..*/
 
     public function sfp($request, $results)
@@ -131,29 +125,57 @@ class LivedataController extends Controller
         $sort = 'title';
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc'; // default desc
         $results = $results->orderby($sort, $order);
-
-
+        $default=$this->default();
+        $device_first = $default['device_first'];
         // FILTERS
         $appends = []; #set its elements for Appending to Pagination#
         $querystr = [];
+
+        $first_deviceid = 0;
+        if(!empty($device_first)){
+            $first_deviceid = $device_first['device_id'];
+        }
+        $last_quality = null;
 
         if ($request->input('device') && !empty($request->input('device'))) 
         {
             
             $qry=$request->input('device');
-           
-            $results = $results->Where("device_id",$qry);
+            $last_bydevice = $this->model
+            ->select('aqm_id','device_id')
+            ->where('device_id', (int)$qry)
+            ->orderby('record_datetime', 'desc')
+            ->first();
             array_push($querystr, 'device='.$qry);
             $appends = array_merge ($appends,['device'=>$qry]);
         }
         else{
-          $default=$this->default();
-          $device_first = $default['device_first'];
-          $device_id= $device_first['device_id'];
-          $results = $results->Where("device_id",$device_id);
+            $last_quality = $this->model
+            ->select('aqm_id','device_id')
+            ->where('device_id', (int)$first_deviceid)
+            ->orderby('record_datetime', 'desc')
+            ->first();
         }
 
+        if(isset($last_bydevice) && $last_bydevice){
+            $last_quality = $last_bydevice;
+        }
 
+        $aqm_id = 0;
+        $device_info = [];
+        if($last_quality!=null || $last_quality){
+            $last_quality = $last_quality->toArray();
+            $aqm_id = $last_quality['aqm_id'];
+            $device_id  = $last_quality['device_id'];
+            $device_info = Device::
+            leftjoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
+            ->where('aqcs_device.device_id', $device_id)
+            ->select(\DB::raw("device_index,JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') as location, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as device"))
+            ->get()->toArray()[0];
+            
+        }
+
+        $results = $results->where('aqcs_airqm.aqm_id', $aqm_id);
         
 
         #no need to send default sort and order to Blade#
@@ -201,7 +223,8 @@ class LivedataController extends Controller
                         'sort'          => $sort,
                         'order'         => $order,
                         'querystr'      => $querystr,
-                        'perpage_query' => $perpage_query
+                        'perpage_query' => $perpage_query,
+                        'device_info' => $device_info,
                     ];
     } /*../function..*/
 
@@ -212,6 +235,7 @@ class LivedataController extends Controller
         $default=$this->default();
         $location = $default['location'];
         $device = $default['device'];
+        $device_combo = array_column($device, 'title', 'device_id');
         $airtype = $default['airtype'];
         #DEFIND MODEL#
         $results = $this->listingmodel();
@@ -226,8 +250,7 @@ class LivedataController extends Controller
 
         $sfp = $this->sfp($request, $results);
 
-
-    	return view('backend.v'.$this->obj_info['name'].'.index', compact('location', 'device','airtype'))
+    	return view('backend.v'.$this->obj_info['name'].'.index', compact('location', 'device', 'device_combo','airtype'))
                 ->with(['act' => 'index'])
                 ->with(['obj_info' => $obj_info])
                 ->with($sfp)

@@ -235,6 +235,15 @@
 						<b class="arrow"></b>
 					</li>
 
+					<li class="showhidemenu {{nav_checkactive(['bydatetime'],$obj_info['name'])}}">
+						<a href="{{ url_builder('admin.controller',['livedata']) }}">
+							<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
+							By Date-Time
+						</a>
+
+						<b class="arrow"></b>
+					</li>
+
 					
 	   
 				   

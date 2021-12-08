@@ -26,53 +26,10 @@ class DashboardController extends Controller
 	}
 
   public function pdfgenerate(Request $request, $id=0){
-            $blade = 'backend.dashboard';
-            $width_size = 3508;
-            $path_img = resource_path('views/backend/widget/');
-            $img_name = 'echarts.jpg';
-            $image = SnappyImage::loadView($blade,
-                             [
-                               'obj_info' => $this->obj_info
-                             ]
-            );
-            
-            
-            //$image->setOption('width', (int)$width_size);
-            //$image->setOption('width', 219);
-            //$image->setOption('width', 375);
-            $image->setOption('quality', 100);
-           
-            
-            
-            $image->save($path_img.$img_name,true);
-
-    // // 
-       
-    //         $format = [
-    //           'mode'                 => '',
-    //           'format'               => array(80,1440),
-    //           'orientation'          => 'P',
-    //           'margin_left'          => 10,
-    //           'margin_right'         => 10,
-    //           'margin_top'           => 0,
-    //           'margin_bottom'        => 20,
-    //           'margin_header'        => 0,
-    //           'margin_footer'        => 10,
-             
-              
-    //       ];
-    //       $data = ['obj_info' => $this->obj_info];
-          
-    //         $pdf = PDF::loadView($blade, $data,[],$format);
-
-    //         $option = 1;
-    //         $pdftitle = 'abc';
-    //        if($option==1)
-    //             return $pdf->stream($pdftitle.'.pdf');
-    //         else
-    //             return $pdf->download($pdftitle.'.pdf');
-            
-    //     //end
+            $blade = 'backend.echarts';
+            $previewdata= view($blade)->with(['obj_info'=>$this->obj_info]);
+            $path = resource_path('views/backend/widget/invoicepre.html');
+              \File::put($path,$previewdata);
 
     
 
