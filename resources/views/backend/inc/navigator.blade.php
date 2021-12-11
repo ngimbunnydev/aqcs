@@ -207,7 +207,7 @@
 			</li>
 
 			{{-- Report --}}
-			<li class="{{nav_checkactive(['livedata'],$obj_info['name'],'open')}}">
+			<li class="{{nav_checkactive(['livedata','reportdatetime'],$obj_info['name'],'open')}}">
 				<a href="#" class="dropdown-toggle">
 					<i class="menu-icon"><i class="fa fa-cog"></i></i>
 					<span class="menu-text">
