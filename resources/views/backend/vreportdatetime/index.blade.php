@@ -83,6 +83,7 @@ foreach ($airtype_data as $air => $data){
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.8.0/echarts.min.js"></script>
 <script>
+	var downloadImgSrc;
 	@isset($device)
 				var devices = {!!json_encode($device)!!};
 	@endisset
@@ -91,7 +92,7 @@ foreach ($airtype_data as $air => $data){
 
 	option = {
 	title: {
-		text: 'Stacked Line'
+		text: ''
 	},
 	tooltip: {
 		trigger: 'axis'
@@ -133,15 +134,14 @@ foreach ($airtype_data as $air => $data){
 
 	$(document).ready(function() {
 		cashFlowEchart.setOption(option);
-		
-
 		setTimeout(function() {
-			const downloadImgSrc = cashFlowEchart.getDataURL({
+			downloadImgSrc = cashFlowEchart.getDataURL({
 			pixelRatio: 2,
 			backgroundColor: '#fff'
 		});
-		//console.log(downloadImgSrc);
-		//$('.showimage').html("<img src='"+downloadImgSrc+"'>");
+		var canvas_ctn = document.getElementById('cash-flow');
+		//console.log(canvas_ctn.offsetHeight);
+		//$('.showimage').html("<img src='"+downloadImgSrc+"' height='"+canvas_ctn.offsetHeight+"' width='"+canvas_ctn.offsetWidth+"'>");
 		}, 1500);
 		
 	});
@@ -193,13 +193,10 @@ foreach ($airtype_data as $air => $data){
 			$(".btnb2excel").on('click', function(e){
 				e.preventDefault();
 				let exportType = $(this).data('export-type');
-				// if(exportType == 'pdf'){
-				// 	var canvas = $('#myCanvas');
-				// 	var dataURL = canvas[0].toDataURL("image/png");
-				// 	console.log(dataURL);
-				// 	airWindows('', {ajaxpath:'ajax_obj', objpath:'', ajaxobj:'reportdatetime', ajaxact:'generatepdf', ajaxnext : 'ajaxreturn', 'imgBase64': dataURL},'','Test',false);
-				// 	return;
-				// }
+				if(exportType == 'pdf'){
+					//airWindows('', {ajaxpath:'ajax_obj', objpath:'', ajaxobj:'reportdatetime', ajaxact:'generatepdf', ajaxnext : 'ajaxreturn', 'imgBase64': downloadImgSrc},'','Test',false);
+					//return;
+				}
 				//set text
 				//$("#b2excel-text").text($(this).text());
 				var form = document.createElement("form");
