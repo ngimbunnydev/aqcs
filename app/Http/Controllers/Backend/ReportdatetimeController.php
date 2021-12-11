@@ -133,7 +133,8 @@ class ReportdatetimeController extends Controller
         
         $sort = 'title';
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc'; // default desc
-        $results = $results->orderby($sort, $order);
+        //$results = $results->orderby($sort, $order);
+
         $default=$this->default();
         $device_first = $default['device_first'];
         // FILTERS
@@ -202,7 +203,6 @@ class ReportdatetimeController extends Controller
             $date_cond="($datefield between '$fromdate' and '$todate')";
         }
         $results = $results->whereRaw($date_cond);
-
 
         #no need to send default sort and order to Blade#
         // if($sort==$this->fprimarykey && $order=='desc')
@@ -274,7 +274,7 @@ class ReportdatetimeController extends Controller
         $airtype = $default['airtype'];
         #DEFIND MODEL#
         $this->tablename = 'airqty_byminute';
-        $results = $this->listingmodel($this->modelbyminute);
+        
         
         if ($request->has('datatype') && !empty($request->input('datatype')))
         {
@@ -292,6 +292,9 @@ class ReportdatetimeController extends Controller
           else{
             $results = $this->listingmodel($this->modelbyminute);
           }
+        }
+        else{
+            $results = $this->listingmodel($this->modelbyminute);
         }
         
 
