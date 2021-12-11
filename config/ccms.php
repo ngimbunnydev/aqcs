@@ -145,6 +145,7 @@ return [
             ],
 
     'device_status' => ['on'=>'Online', 'off'=>'Offline'],
+    'datatype' => ['minute'=>'Minute', 'hour' => 'Hour', 'week' => 'Week'],
   
   
 

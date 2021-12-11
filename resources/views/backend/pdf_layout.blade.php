@@ -1,5 +1,5 @@
 @php 
-	$header_contact_info = json_decode(html_entity_decode($pageinfo['contact']),true);
+	
 @endphp
 
 <!DOCTYPE html>
@@ -18,210 +18,79 @@
 				font-family: arial;
                 font-size: 10pt;
             }
-			/* header */
-			#header-wrapper{
-				float:left; 
-				width:100%;​ 
-				text-align: center; 
-				border:0px solid green;
-				padding-bottom: 8px;
-
+			
+			.battambang{
+				font-family: 'Battambang';
 			}
-			#header-wrapper-img{
-				float:left; 
-				width:20%; 
-				border:0px solid red;
-			}
-			#header-wrapper-info{
-				float:right; 
-				width:80%; 
-				text-align: right; 
-				border:0px solid blue;
-			}
-			#header-title{
-				padding-bottom: 8px;
-				font-size: 13pt;
-			}
-			/* footer */
-			#footer-wrapper{
-				border-top: 2px solid #c21301; 
-				font-size: 9pt; 
-				text-align: center; 
-				padding-top: 3mm; 
-			}
-			/* more */
-			.mg-0{
-				margin: 0px;
-			}
-			.pd-0{
-				padding: 0px;
+			.clearfix::after {
+				content: "";
+				clear: both;
+				display: table;
 			}
 
-			.fsize-pt-8{
-				font-size: 8pt;
+			body {
+			background: #fff;
 			}
-			.fsize-pt-9{
-				font-size: 9pt;
+			page {
+			background: white;
+			display: block;
+			margin: 0 auto;
+			margin-bottom: 0.5cm;
+			box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+			padding: 20px;
 			}
-			.fsize-pt-10{
-				font-size: 10pt;
+			page[size="A4"] {  
+			width: 21cm;
+			height: 29.7cm; 
 			}
-			.fsize-pt-11{
-				font-size: 11pt;
+			page[size="A4"][layout="landscape"] {
+			width: 29.7cm;
+			height: 21cm;  
 			}
-			.fsize-pt-12{
-				font-size: 12pt;
+			page[size="A3"] {
+			width: 29.7cm;
+			height: 42cm;
 			}
-			.separator{
-				float: left;
-				width: 100%;
-				border-top: 2px solid #c21301; 
-				padding-top: 3mm; 
+			page[size="A3"][layout="landscape"] {
+			width: 42cm;
+			height: 29.7cm;  
 			}
-			.collapsed{
-				border: 1px solid #ddd;
-                border-collapse: collapse;
+			page[size="A5"] {
+			width: 14.8cm;
+			height: 21cm;
 			}
-			.text-center{
-				text-align: center;
+			page[size="A5"][layout="landscape"] {
+			width: 21cm;
+			height: 14.8cm;  
 			}
-			.text-left{
-				text-align: left;
+			@media print {
+			body, page {
+				margin: 0;
+				box-shadow: 0;
 			}
-			.text-right{
-				text-align: right;
 			}
-			.middle{
-				vertical-align: middle;
-			}
-			.item-heading-title{
-				font-size: 12pt;
-			}
-
-
-			.rowtitle{
-				float: left; width: 39%; text-align: right; border: 0px solid red;
-			}
-
-			.rowvalue{
-				float: left; width: 59%; border: 0px solid blue; text-align: right;
-			}
-
-			.insidetitle{
-				float: left; width: 40%; text-align: left; border: 1px solid red;
-			}
-
-			.indsidevalue{
-				float: left; width: 60%; border: 1px solid blue; text-align: right;
-			}
-      .battambang{
-        font-family: 'Battambang';
-      }
-      .clearfix::after {
-        content: "";
-        clear: both;
-        display: table;
-      }
 
 		</style>
 		<!-- BEGIN PAGE LEVEL PLUGINS -->
 		    @stack('customcss')
 		<!-- END PAGE LEVEL PLUGINS -->
+		<!-- Page specific plugin scripts/css -->
+		@yield('header_import')
+		<!-- END -->
 	</head>
 
 	<body class="no-skin">
-		@if($preview=='pdf')
-		<htmlpageheader name="page-header">
-    @endif
-			<div id="header-wrapper" class="clearfix">                    
-	            <div id="header-wrapper-img">
-                @if($preview=='pdf')
-                <img src="{{base_path('resources/filelibrary/'.$pageinfo['logo'])}}" width="100"/>
-                @else
-                <img src="{{ URL::asset('/resources/filelibrary/'.$pageinfo['logo']) }}" width="100"/>
-                @endif
-	            </div>
-	            <div id="header-wrapper-info">
-                   
-
-                   <div style="float:left; width:100%;">
-                    	<div class="rowtitle">&nbsp;</div>
-
-                    	<div class="rowvalue">
-                    		<h4 class="mg-0" id="header-title">{{config('sysconfig.companyname')}}</h4> 
-                    	</div>
-                    	
-                    </div><!--a row-->
-
-                    <div style="float:left; width:100%;">
-                    	<div class="rowtitle">&nbsp;</div>
-
-                    	<div class="rowvalue">
-                    			{{$header_contact_info['address']}}
-                    	</div>
-                    	
-                    </div><!--a row-->
-
-                    <div style="float:left; width:100%;">
-                    	<div class="rowtitle">&nbsp;</div>
-
-                    	<div class="rowvalue">
-                    		<span>Phone: {{$header_contact_info['phone']}}</span>
-                    		<!-- <table width="100%" cellpadding="0" cellspacing="0">
-	                    		<tr>
-	                    			<td style="text-align: right;">
-	                    				Phone
-	                    			</td>
-	                    			<td width="10">:</td>
-	                    			<td style="text-align: right;">
-	                    				{{$header_contact_info['phone']}}
-	                    			</td>
-	                    		</tr>
-
-	                    		<tr>
-	                    			<td style="text-align: right;">
-	                    				Email
-	                    			</td>
-	                    			<td width="10">:</td>
-	                    			<td style="text-align: right;">
-	                    				{{$header_contact_info['email']}}
-	                    			</td>
-	                    		</tr>
-
-	                    	</table> -->
-                    		
-                    	</div>
-                    	
-                    </div><!--a row-->
-
-                    <div style="float:left; width:100%;">
-                    	<div class="rowtitle">&nbsp;</div>
-
-                    	<div class="rowvalue">
-                    		<span>Email: {{$header_contact_info['email']}}</span>
-                    		
-                    	</div>
-                    	
-                    </div><!--a row-->
-
-
-
-
-                </div>
-	        </div>
-			<div class="separator">&nbsp;</div>
-    @if($preview=='pdf')
-		</htmlpageheader>
-    @endif
+	
 		<!-- PAGE CONTENT BEGINS -->
-		@yield('app')
+		<page size="A4" layout="landscape">
+			@yield('app')
+		</page>
+		
 		<!-- PAGE CONTENT ENDS -->
-		@if($preview=='pdf')
-		<htmlpagefooter name="page-footer">
-			<div id="footer-wrapper">
-                Page {PAGENO} of {nb}
-     </div>
-		</htmlpagefooter>
-		@endif
+		<!-- Page specific plugin scripts -->
+		@stack('scripts')
+		@yield('footer_import')
+		<!-- END -->
+		
 	</body>
 </html>
