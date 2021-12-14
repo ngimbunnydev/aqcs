@@ -84,7 +84,7 @@ class LocationController extends Controller
         {$branchcondition='<>';}
       
         #DEFIND MODEL#
-        return $this->model->select(\DB::raw(   $this->fprimarykey." AS id, code, ordering,
+        return $this->model->select(\DB::raw(   $this->fprimarykey." AS id, code, latlong, latitude, longitude, ordering,
         JSON_UNQUOTE(title->'$.".$this->dflang[0]."') AS title"
                                                 )
                                         )
