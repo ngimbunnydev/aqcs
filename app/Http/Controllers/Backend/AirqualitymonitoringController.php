@@ -104,7 +104,7 @@ class AirqualitymonitoringController extends Controller
         return $this->model
         ->join('aqcs_device','aqcs_airqm.device_id', '=', 'aqcs_device.device_id')
         ->leftJoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
-        ->select(\DB::raw(   $this->fprimarykey." AS id, record_datetime,
+        ->select(\DB::raw(   $this->fprimarykey." AS id, record_datetime, device_index, paramenters,
         JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') AS location,
         JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') AS title"
                                                 )
@@ -674,7 +674,7 @@ class AirqualitymonitoringController extends Controller
             $rules=[];
      
             $rules['device_id'] = "required|numeric|gt:0";
-            $rules['record_datetime'] = "required|date_format:Y-m-d H:i";
+            $rules['record_datetime'] = "required|date_format:d-m-Y H:i:s";
             if($isupdate){
                 $rules=array_merge($rules, $update_rules);
             }
