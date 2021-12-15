@@ -127,7 +127,7 @@ foreach ($airtype_data as $air => $data){
 
 <div style="float:left; width:100%;">
     
-    <div id="cash-flow">aaa</div>
+    <div id="cash-flow" style="height: 450px !important"></div>
 </div>
 <div class="item-body-box">
 </div>

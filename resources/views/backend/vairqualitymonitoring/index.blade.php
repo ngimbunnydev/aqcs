@@ -255,7 +255,7 @@
 															model
 														</td>
 														<td>
-															location
+															{{$row->location}}
 														</td>
 														<td>
 															status

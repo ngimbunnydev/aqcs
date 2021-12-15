@@ -1,6 +1,10 @@
 @php
-//dd($airtype);
+$using_airtype = $airtype[$airtype_id];
+$airtype_combo = [];
+foreach ($airtype as $item){
 
+	$airtype_combo[$item['airtype_id']]= $item['title'];
+}
 if((null!==request()->get('location') && !empty(request()->get('location')))){
 	$location_id  = request()->get('location');
 	$filtered2 = array_filter( $device, function( $v ) use($location_id){ 
@@ -12,11 +16,10 @@ if((null!==request()->get('location') && !empty(request()->get('location')))){
 	}
 
 }
+
 $legend = [];
 $x_axis_data = [];
-
-$series = [];
-$airtype_data = [];
+$data = [];
 $dateformat = 'Y-m-d H:i';
 if(request()->get('datatype')=='hour'){
 	$dateformat = 'Y-m-d H';
@@ -26,27 +29,11 @@ elseif(request()->get('datatype')=='day') {
 }
 foreach ($results as $row){
 	$x_axis_data[] = date($dateformat, strtotime($row->record_datetime));
-	$id = explode(',', $row->airtype_id);
-	$val = explode(',', $row->qty);
-	$data = array_combine($id, $val);
-	foreach ($airtype as $item){
-		$airtype_data[$item['title']][] = $data[$item['airtype_id']];
-	}
-	
-	
+	$data[]= $row->qty;
+
 }
 $x_axis_data = array_reverse($x_axis_data);
-//$airtype_data = array_reverse($airtype_data);
-foreach ($airtype_data as $air => $data){
-	$legend[] = $air;
-	$ele = [
-		'name' => $air,
-		'type' => 'line',
-		'stack' => 'Total',
-		'data' => array_reverse($data)
-	];
-	array_push($series,$ele);
-}
+$data = array_reverse($data);
 
 @endphp
 @extends('backend.layout')
@@ -98,22 +85,12 @@ foreach ($airtype_data as $air => $data){
 	var option;
 
 	option = {
-	title: {
-		text: ''
-	},
-	tooltip: {
+    tooltip: {
 		trigger: 'axis'
 	},
+	
 	legend: {
-		data: [{!!"'".implode("','", $legend)."'"!!}]
-		//data: ['Email', 'Union Ads', 'Video Ads', 'Direct', 'Search Engine']
-	},
-	grid: {
-		//height: 300,
-		left: '3%',
-		right: '4%',
-		bottom: '3%',
-		containLabel: true
+		data: ["{{$using_airtype['title']}}"]
 	},
 	toolbox: {
 		feature: {
@@ -123,22 +100,69 @@ foreach ($airtype_data as $air => $data){
 					}
 		}
 	},
-	
 	xAxis: {
 		type: 'category',
-		boundaryGap: false,
-		//data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 		data: [{!!"'".implode("','", $x_axis_data)."'"!!}],
 		axisLabel: {
-         interval: 0,
-         rotate: 10 //If the label names are too long you can manage this by rotating the label.
-      }
+			interval: 0,
+			rotate: 10 //If the label names are too long you can manage this by rotating the label.
+		}
 	},
 	yAxis: {
-		type: 'value'
+		type: 'value',
+		max:"{{(int)$using_airtype['standard_qty']+10}}"
 	},
-	series: {!!json_encode($series)!!}
-	};
+	series: [
+		{
+		name: "{{$using_airtype['title']}}",
+		type: 'line',
+		stack: 'Total',
+
+		lineStyle: {
+						type: 'solid',
+						width: 3,
+						color: 'blue'
+					},
+		itemStyle: {
+			color: 'blue',
+			borderWidth: 3,
+			opacity: 1
+		},
+		data: [{!!"'".implode("','", $data)."'"!!}],
+			markLine: {
+					symbol:"none",
+					data: [{
+						name: 'ស្តង់ដា', 
+						yAxis: "{{(int)$using_airtype['standard_qty']}}",
+						label: {
+							formatter: '{b}',
+							position: 'insideMiddleTop',
+							color: 'red',
+							fontStyle: 'italic',
+							fontWeight: 'bold',
+							fontSize: 14,
+							//fontFamily: 'Helvetica',
+							
+							// lineHeight: 25,
+							// width: 200,
+							// height: 200,
+							// tag: 'asdasdasdasdasd',
+							
+							
+							
+						}
+					}],
+					lineStyle: {
+						color: 'red',
+						type: 'solid',
+						width: 2
+					},
+				}
+		
+		}
+		
+	]
+};
 
 	$(document).ready(function() {
 		cashFlowEchart.setOption(option);
@@ -214,6 +238,7 @@ foreach ($airtype_data as $air => $data){
 				var elDevice = document.createElement("input"); 
 				var elFromdate = document.createElement("input");
 				var elTodate = document.createElement("input");
+				var	elAirtype = document.createElement("input");
 				var	elDatatype = document.createElement("input");
 				var elPage = document.createElement("input");
 
@@ -254,6 +279,12 @@ foreach ($airtype_data as $air => $data){
 				elTodate.value=getUrlParameter('todate');
 				elTodate.name="todate";
 				form.appendChild(elTodate);
+
+				//Air Type
+				elAirtype.type="hidden";
+				elAirtype.value=getUrlParameter('airtype');
+				elAirtype.name="airtype";
+				form.appendChild(elAirtype);
 
 				//DataType
 				elDatatype.type="hidden";
@@ -361,34 +392,49 @@ foreach ($airtype_data as $air => $data){
 
 							<div class="form-group col-md-2">
 
-							<label class="frm-label" for="title">Data Type</label>
-							<select class="form-control" name="datatype" id="datatype">
-								{!!cmb_listing(config('ccms.datatype'),[request()->get('datatype') ?? ''],'','')!!} 					       
+							<label class="frm-label" for="title">Air Type</label>
+							<select class="form-control" name="airtype" id="airtype">
+								{!!cmb_listing($airtype_combo,[request()->get('airtype') ?? ''],'','')!!} 					       
 														
 							</select>
 
 							</div>
 
+							<div class="form-group col-md-2">
+
+								<label class="frm-label" for="title">Data Type</label>
+								<select class="form-control" name="datatype" id="datatype">
+									{!!cmb_listing(config('ccms.datatype'),[request()->get('datatype') ?? ''],'','')!!} 					       
+															
+								</select>
+
+							</div>
+
 						   
 
-						    <div class="form-group col-md-1">
+						   
+
+							
+							
+						 </div>
+
+						 <div class="form-row">
+							<div class="form-group col-md-2 col-md-offset-4">
 						    	<label>&nbsp;</label>
 						    	<button class="form-control btn btn-default" type="submit" value="filter">
                                     <i class="fa fa-search"></i>
                                 </button>
 						    </div>
 
-						    <div class="form-group col-md-1">
+						    <div class="form-group col-md-2">
 						      <label>&nbsp;</label>
 
                                <button id="btnreset" class="form-control btn btn-default" type="button" onclick="location.href='{{url()->current()}}'">
                                     @lang('label.reset')
                                </button>
 						    </div>
-
-							
-							
 						 </div>
+
 				    <!--/--></div>
 
 				</form>
@@ -471,13 +517,20 @@ foreach ($airtype_data as $air => $data){
 																<th>
 																	Date-Time
 																</th>
-		
 																
-																@foreach ($airtype as $item)
 																<th>
-																	{{$item['title']}}
+																	Air Type
 																</th>
-																@endforeach
+
+																<th>
+																	Standard
+																</th>
+
+																<th>
+																	Real Data
+																</th>
+																
+																
 																
 																
 		
@@ -487,22 +540,22 @@ foreach ($airtype_data as $air => $data){
 		
 														<tbody>
 															@foreach ($results as $row)
-															@php
-																$id = explode(',', $row->airtype_id);
-																$val = explode(',', $row->qty);
-																$data = array_combine($id, $val);
-															@endphp
+															
 															<tr>
 																
 																<td>
-																	{{ $row->record_datetime}}
+																	{{date($dateformat, strtotime($row->record_datetime))}}
 																</td>
 		
-																@foreach ($airtype as $item)
-																<td class="hidden-480">
-																	{{$data[$item['airtype_id']]??'-'}}
+																<td>
+																	{{ $using_airtype['title'] }}
 																</td>
-																@endforeach
+																<td>
+																	{{ $using_airtype['standard_qty']}}
+																</td>
+																<td>
+																	{{ $row->qty}}
+																</td>
 																
 															</tr>
 															 @endforeach

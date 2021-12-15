@@ -20,7 +20,7 @@ use App\Models\Backend\Reportdatetimebyday;
 
 
 
-class ReportdatetimeController extends Controller
+class ReportlocationController extends Controller
 {
     private $args;
     private $model;
@@ -33,12 +33,12 @@ class ReportdatetimeController extends Controller
     private $dflang;
     private $request;
     private $rcdperpage=-1; #record per page#
-    private $obj_info=['name'=>'reportdatetime','title'=>'Date-Time','routing'=>'admin.controller','icon'=>'<i class="fa fa-clipboard-list" aria-hidden="true"></i>'];
+    private $obj_info=['name'=>'reportlocation','title'=>'Air Type/Device','routing'=>'admin.controller','icon'=>'<i class="fa fa-clipboard-list" aria-hidden="true"></i>'];
     
     private $protectme;
 
 	public function __construct(array $args){ //public function __construct(Array args){    
-    $this->obj_info['title'] = 'Multi Air Type';//__('label.livedata');
+    $this->obj_info['title'] = 'Air Type';//__('label.livedata');
     $this->args = $args;
 	$this->modelbyminute = new Reportdatetime;
     $this->modelbyhour = new Reportdatetimebyhour;
@@ -76,7 +76,7 @@ class ReportdatetimeController extends Controller
         ];
 
         $airtype = Airtype::where('trash', '!=', 'yes')
-        ->select(\DB::raw("airtype_id, code, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
+        ->select(\DB::raw("airtype_id, code, standard_qty, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
                                                 ))->get()->keyBy('airtype_id')->toArray();
       
         $device_qry = Device::
@@ -118,7 +118,7 @@ class ReportdatetimeController extends Controller
         #DEFIND MODEL#
         return $model
         ->join('aqcs_device',$tablename.'.device_id', '=', 'aqcs_device.device_id')
-        ->select(\DB::raw($tablename.".device_id as device_id, record_datetime, GROUP_CONCAT(airtype_id) as airtype_id, GROUP_CONCAT(qty) as qty"))
+        ->select(\DB::raw($tablename.".device_id as device_id, record_datetime, airtype_id, qty"))
         ->groupBy($tablename.'.device_id')
         ->groupBy('record_datetime');
         
@@ -137,6 +137,7 @@ class ReportdatetimeController extends Controller
 
         $default=$this->default();
         $device_first = $default['device_first'];
+        $airtype = $default['airtype'];
         // FILTERS
         $appends = []; #set its elements for Appending to Pagination#
         $querystr = [];
@@ -162,7 +163,21 @@ class ReportdatetimeController extends Controller
             ->select(\DB::raw("device_index,JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') as location, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as device"))
             ->get()->toArray()[0];
         
-        $results = $results->where($tablename.'.device_id', $device_id);      
+        $results = $results->where($tablename.'.device_id', $device_id);  
+        
+        if ($request->input('airtype') && !empty($request->input('airtype'))) 
+        {
+            $airtype_id=$request->input('airtype');
+            array_push($querystr, 'airtype='.$airtype_id);
+            $appends = array_merge ($appends,['airtype'=>$airtype_id]);
+            $results = $results->where($tablename.'.airtype_id', $airtype_id); 
+        }
+        else{
+            $first_value = reset($airtype);
+            $airtype_id=$first_value['airtype_id'];
+            $results = $results->where($tablename.'.airtype_id', $airtype_id); 
+        }
+       
         
         if ($request->has('datatype') && !empty($request->input('datatype')))
         {
@@ -232,6 +247,7 @@ class ReportdatetimeController extends Controller
             return [
                 'results'           => $results,
                 'device_info' => $device_info,
+                'airtype_id' => $airtype_id,
             ];
           }
         $results = $results->paginate($perpage);
@@ -260,6 +276,7 @@ class ReportdatetimeController extends Controller
                         'querystr'      => $querystr,
                         'perpage_query' => $perpage_query,
                         'device_info' => $device_info,
+                        'airtype_id' => $airtype_id,
                     ];
     } /*../function..*/
 

@@ -1331,7 +1331,7 @@ class AirqualitymonitoringController extends Controller
                                 'tag' => '',
                 
                             ];
-                            $paramenters[$aritype_code??''] = $row[$code] ?? 0;
+                            $paramenters[$code??''] = $row[$code] ?? 0;
                             array_push($subtableData, $subrecord);
                             
                         }
