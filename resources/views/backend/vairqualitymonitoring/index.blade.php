@@ -172,7 +172,7 @@
 															{!!
 																orderMenu(
 																[	'caption'=>__('label.id'),
-																	'sort'=>'pmethod_id', 
+																	'sort'=>'aqm_id', 
 																	'current_sort'=>$sort, 
 																	'mdefault'=>'asc', 
 																	'method'=>$order, 
@@ -183,41 +183,13 @@
 																$obj_info)
 															!!}															
 														</th>
-
-														<th>
-															{!!
-																orderMenu(
-																[	'caption'=>__('label.title'),
-																	'sort'=>'title', 
-																	'current_sort'=>$sort, 
-																	'mdefault'=>'asc', 
-																	'method'=>$order, 
-																	'act'=>$act
-																],
-																$querystr,
-																$perpage_query, 
-																$obj_info)
-															!!}
-														</th>
-														<th>@lang('label.code')</th>
-														<th>@lang('label.lb21')</th>
 														<th>@lang('label.lb09')</th>
-														<th width="70" >@lang('label.status')</th>
-                            <th width="80">
-															{!!
-																orderMenu(
-																[	'caption'=>'Order',
-																	'sort'=>'ordering', 
-																	'current_sort'=>$sort, 
-																	'mdefault'=>'asc', 
-																	'method'=>$order, 
-																	'act'=>$act
-																],
-																$querystr,
-																$perpage_query, 
-																$obj_info)
-															!!}
+														<th>
+															Device
 														</th>
+														<th width="150">Date-Time</th>
+														<th>Parameters</th>
+                            							
 														<th width="120" class="width-480"></th>
 													</tr>
 												</thead>
@@ -242,6 +214,10 @@
 														</td>
 
 														<td>
+															{{$row->location}}
+														</td>
+
+														<td>
 															<a href="{{url_builder($obj_info['routing'],
 										[$obj_info['name'],'edit',$row->id],
 										[]
@@ -249,20 +225,14 @@
 														</td>
 
 														<td>
-															code
+															{{$row->record_datetime	}}
 														</td>
+												
+														
 														<td>
-															model
+															{{$row->paramenters	}}
 														</td>
-														<td>
-															{{$row->location}}
-														</td>
-														<td>
-															status
-														</td>
-                            							<td>
-															ordering
-														</td>
+                            				
 														<td>
 															@include('backend.widget.actmenu',['rowid'=>$row->id ,'btnedit' => 'yes', 'btnduplicate' => 'yes', 'btndelete' => 'yes','btnrestore' => 'yes','btndestroy' => 'yes'])
 														</td>
