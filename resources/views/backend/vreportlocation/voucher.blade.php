@@ -153,7 +153,7 @@ $data = array_reverse($data);
 
 <div style="width:100%; margin-top:10px">
 	<div style="width:100%; height:130px; position: relative">
-		<div style="position:absolute; left:100px">
+		<div style="position:absolute; left:50px">
 			<img src="{{ URL::asset('/resources/filelibrary/logo-ministry-of-environment.jpeg') }}" width="100px"/>
 			<br>
 			<span class="khtitle" style="font-size: 18px; color: green">ក្រសួងបរិស្ថាន</span>
