@@ -207,7 +207,7 @@
 			</li>
 
 			{{-- Report --}}
-			<li class="{{nav_checkactive(['livedata','reportdatetime', 'reportlocation'],$obj_info['name'],'open')}}">
+			<li class="{{nav_checkactive(['livedata','reportdatetime', 'reportlocation','reportbranch'],$obj_info['name'],'open')}}">
 				<a href="#" class="dropdown-toggle">
 					<i class="menu-icon"><i class="fa fa-cog"></i></i>
 					<span class="menu-text">
@@ -249,6 +249,15 @@
 						<a href="{{ url_builder('admin.controller',['reportlocation']) }}">
 							<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
 							Air Type
+						</a>
+
+						<b class="arrow"></b>
+					</li>
+
+					<li class="showhidemenu {{nav_checkactive(['reportbranch'],$obj_info['name'])}}">
+						<a href="{{ url_builder('admin.controller',['reportbranch']) }}">
+							<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
+							Province/Country
 						</a>
 
 						<b class="arrow"></b>
