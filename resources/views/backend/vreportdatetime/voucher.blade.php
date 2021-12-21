@@ -33,30 +33,21 @@ foreach ($airtype_data as $air => $data){
 @extends('backend.pdf_layout')
 @section('header_import')
 <style>
-    #net-worth {
-        background: #2b7dbc;
-        color: #fff;
-        border-radius: 4px;
-        padding: 8px;
-    }
-    #new-worth-num{
-      margin-top: 0px;
-      border-bottom: 1px solid #fff;
-      padding-bottom: 15px;
-      font-size: 17px;
-      margin-bottom: 65px;
-    }
-    .summary-item{display:flex;line-height: 2;}
-    .summary-item-text{flex: 0 0 45%;}
-    #cash-flow, #sales-echart, .dashboard-echart{width: auto;height: 250px;}
-    #expense-category-echart{width:auto;height:250px;}
-    #new-worth-text{margin-bottom: 55px;text-transform: capitalize;}
-    .summary-item-num{text-transform: capitalize;}
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<meta charset="utf-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Roboto:wght@100;300;400;500&family=Moul&display=swap" rel="stylesheet">
+    #cash-flow, #sales-echart, .dashboard-echart{width: auto;}
+    
     @media only screen and (max-width: 736px){
         #cash-flow {
             margin-top: 30px;
         }
     }
+
+	.khtitle{
+        font-family: 'Moul', cursive;
+      }
   </style>
 @stop
 
@@ -121,16 +112,43 @@ foreach ($airtype_data as $air => $data){
 
 @section('app')
 
-<div class="item-heading-box">
-    <h3 class="item-heading-title" style="margin-bottom: 30px;">Charts</h3>
+<div style="width:100%; margin-top:10px">
+	<div style="width:100%; height:130px; position: relative">
+		<div style="position:absolute; left:100px">
+			<img src="{{ URL::asset('/resources/filelibrary/logo-ministry-of-environment.jpeg') }}" width="100px"/>
+			<br>
+			<span class="khtitle" style="font-size: 18px; color: green">ក្រសួងបរិស្ថាន</span>
+		</div>
+
+		<div class="khtitle" style="text-align: center; font-size:18px; color: green">
+			ព្រះរាជាណាចក្រកម្ពុជា
+			<br>
+			ជាតិ សាសនា ព្រះមហាក្សត្រ
+			
+		</div>
+	</div>
+	
+	<div style="width:100%; text-align: center;">
+			<span class="khtitle" style="color: rgb(57, 104, 175); font-size:16px;">
+				សេចក្តីជូនដំណឹង
+			</span>
+
+		</div>
+
+	
+
 </div>
 
-<div style="float:left; width:100%;">
+<div style="float:left; width:100%; border:1px solid #ddd">
     
-    <div id="cash-flow" style="height: 450px !important"></div>
+    <div id="cash-flow" style="height: 400px !important"></div>
 </div>
-<div class="item-body-box">
+
+
+<div style="float: left; width:100%; margin-top:10px; text-align: center">
+	អគារមរតកតេជោ ដីឡូលេខ៥០៣ ផ្លូវកៅស៊ូអមមាត់ទន្លេបាសាក់ សង្កាត់ទន្លេបាសាក់ ខណ្ឌចំការមន រាជធានីភ្នំពេញ ទូរសព្ទ:០២៣ ២៣៥ ០០៤/ ០២៣ ២៣៥ ០០៦
 </div>
+
 @stop
 
 @push('customcss')
