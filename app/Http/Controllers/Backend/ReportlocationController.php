@@ -76,7 +76,7 @@ class ReportlocationController extends Controller
         ];
 
         $airtype = Airtype::where('trash', '!=', 'yes')
-        ->select(\DB::raw("airtype_id, code, standard_qty, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
+        ->select(\DB::raw("airtype_id, code, standard_qty, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title, unit, color, noted"
                                                 ))->get()->keyBy('airtype_id')->toArray();
       
         $device_qry = Device::
@@ -155,8 +155,9 @@ class ReportlocationController extends Controller
         }
         else{
             $device_id= $first_deviceid;
+            
         }
-
+     
         $device_info = Device::
             leftjoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
             ->where('aqcs_device.device_id', $device_id)

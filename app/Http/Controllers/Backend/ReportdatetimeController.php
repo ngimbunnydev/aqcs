@@ -76,7 +76,7 @@ class ReportdatetimeController extends Controller
         ];
 
         $airtype = Airtype::where('trash', '!=', 'yes')
-        ->select(\DB::raw("airtype_id, code, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title"
+        ->select(\DB::raw("airtype_id, code, JSON_UNQUOTE(title->'$.".$this->dflang[0]."') as title, unit, color, noted"
                                                 ))->get()->keyBy('airtype_id')->toArray();
       
         $device_qry = Device::

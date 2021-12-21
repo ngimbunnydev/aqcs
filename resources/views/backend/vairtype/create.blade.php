@@ -184,6 +184,9 @@
 			  <div class='table_header'>@lang('label.title') <span class="red">*</span></div>
 			  <div class='table_header'>@lang('label.code') <span class="red">*</span></div>
 			  <div class='table_header'>@lang('label.lb22')</div>
+			  <div class='table_header'>Unit</div>
+			  <div class='table_header'>Color</div>
+			  <div class='table_header'>Note</div>
 			  <div class='table_header'>@lang('ccms.ordering')</div>
 			  <div class='table_header'>&nbsp;</div>
 			</div> 
@@ -225,12 +228,41 @@
                                    
                </div><!-- /.cell -->
 
+			   
+
 			   <div class='table_small'>
                               
 				<div class='table_cell'>@lang('label.lb22')</div>
 			   <div class='table_cell'>
 				 <input type="text" class="form-control input-sm" name="standard_qty[]" id="standard_qty" placeholder="" value="{{$standard_qty[$i] ?? '' }}">
 			   </div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Unit</div>
+				<div class='table_cell'>
+					<input type="text" class="form-control input-sm" name="unit[]" id="unit" placeholder="" value="{{$unit[$i] ?? '' }}">
+				</div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Color</div>
+				<div class='table_cell'>
+					<input type="text" class="form-control input-sm" name="color[]" id="color" placeholder="" value="{{$color[$i] ?? '' }}">
+				</div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Note</div>
+				<div class='table_cell'>
+					<input type="text" class="form-control input-sm" name="noted[]" id="noted" placeholder="" value="{{$noted[$i] ?? '' }}">
+				</div>          
 								
 			</div><!-- /.cell -->
 
@@ -313,6 +345,28 @@
     <div class='table_cell'>@lang('label.lb22')</div>
     <div class='table_cell'>
       <input type="text" class="form-control input-sm" name="standard_qty[]" id="standard_qty" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell -->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Unit</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="unit[]" id="unit" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell -->
+
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Color</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="color[]" id="color" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell -->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Note</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="noted[]" id="noted" placeholder="" value="">
     </div>                                    
   </div><!-- /.cell -->
   

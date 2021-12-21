@@ -84,6 +84,14 @@ else{
 			x: 'center',
 			position: 'bottom'
 		},
+		toolbox: {
+		feature: {
+			saveAsImage: {
+					show: true,
+					title: "Save As Image"
+					}
+		}
+	},
   xAxis: {
     type: 'category',
     data: [{!!"'".implode("','", array_values($branch))."'"!!}]
