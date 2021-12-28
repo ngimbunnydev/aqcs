@@ -29,8 +29,11 @@
 					<div class="col-sm-10 col-sm-offset-1">
 						<div class="login-container">
 							
-
+							
 							<div class="space-30"></div>
+							<div style="display: flex; justify-content: center; align-items: center; padding: 10px 0px">
+								<img src="{{ URL::asset('/resources/filelibrary/aqcs_logo.png') }}" width="100%"/>
+							</div>
 
 							<div class="position-relative" >
 								<div id="login-box" class="login-box visible widget-box">
@@ -117,7 +120,7 @@
 											<div>
 												
 													<i class="ace-icon fa fa-copyright white"></i>
-													<span class="white">i-POS&nbsp;&nbsp;&nbsp;</span>
+													<span class="white">&nbsp;&nbsp;&nbsp;</span>
 													
 												
 											</div>
