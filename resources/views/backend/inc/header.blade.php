@@ -14,6 +14,7 @@
 				</button>
 
 				<div class="navbar-header pull-left">
+          <img src="{{ URL::asset('/resources/filelibrary/aqcs_logo.png') }}" height="50px" style="padding: 5px"/>
 					<a href="{{url_builder($obj_info['routing'],['home',''])}}" class="navbar-brand">
 					  Air Quality Monitoring'
             <sub>System</sub>
