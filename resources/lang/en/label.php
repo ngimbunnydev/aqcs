@@ -149,6 +149,33 @@ return [
   'datetime'  => 'Date-Time',
   'report' => 'Report',
   'livedata' => 'Live Data',
+
+
+  'lb115'  =>  'Permission.Name',
+  'lb27' => 'Size',
+  'lb28' => 'Color',
+  'lb38' => 'System Setting',
+  'lb221' => 'System Tracking',
+  'lb261'  => 'Table/Room',
+
+  /*
+  |User
+  */
+  'lb109'  =>  'User.Name',
+  'lb110'  =>  'Permission',
+  'lb111'  =>  'Latin Name',
+  'lb112'  =>  'Native Name',
+  'lb113'  =>  'Confirm Password',
+  'lb114'  =>  'Personal Name',
+  'lb115'  =>  'Permission.Name',
+
+  'lb31' => 'Branch',
+  'lb32' => 'Warehouse',
+  'lb104'  =>  'Password',
+  'lb105'  =>  'Create Date',
+  'lb107'  =>  'Position',
+  'lb39' => 'General',
+  'lb192' => 'Local Region',
 ];
 
 

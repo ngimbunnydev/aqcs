@@ -254,11 +254,12 @@
 			
 		</div>
 
-		<div class="row">
+		
 
-			<div class="col-xs-12 col-sm-12 col-lg-12 form-group">
+		<div class="row">
+			<div class="col-xs-12 col-sm-6 col-lg-6 form-group">
 				<label class="frm-label" for="level_id">@lang('label.lb110')<span class="red">*</span> <span class="badge badge-info new">
-									<a href="#" id="newctype">@lang('label.lb23')</a>
+									<a href="#" id="newctype">New</a>
 								</span></label>
 				<select class="form-control input-sm" name="level_id" id="level_id">
 																	   
@@ -267,15 +268,9 @@
 															  
 			</div>
 
-			
-
-
-		</div>
-
-		<div class="row">
 			<div class="col-xs-12 col-sm-6 col-lg-6 form-group">
 				<label class="frm-label" for="branch_id">@lang('label.lb31')<span class="red">*</span> <span class="badge badge-info new">
-									<a href="#" id="newbranch">@lang('label.lb23')</a>
+									<a href="#" id="newbranch">New</a>
 								</span></label>
 				<select class="form-control input-sm" name="branch_id" id="branch_id">
 																	   
@@ -284,16 +279,7 @@
 															  
 			</div>
 
-			<div class="col-xs-12 col-sm-6 col-lg-6 form-group">
-				<label class="frm-label" for="wh_id">@lang('label.lb32')<span class="red">*</span> <span class="badge badge-info new">
-									<a href="#" id="newwarehouse">@lang('label.lb23')</a>
-								</span></label>
-				<select class="form-control input-sm" name="wh_id" id="wh_id">
-																	   
-								{!!cmb_listing($warehouse,[$wh_id ?? ''],'','')!!} 
-							</select>
-															  
-			</div>
+			
 		</div>
 
 		<div class="row">

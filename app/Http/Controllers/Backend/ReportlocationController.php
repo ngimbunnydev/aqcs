@@ -37,8 +37,12 @@ class ReportlocationController extends Controller
     
     private $protectme;
 
-	public function __construct(array $args){ //public function __construct(Array args){    
-    $this->obj_info['title'] = 'Air Type';//__('label.livedata');
+	public function __construct(array $args){ //public function __construct(Array args){   
+        $this->protectme = [  
+            config('ccms.protectact.index'),
+
+            ]; 
+    $this->obj_info['title'] = 'Air Type Report';//__('label.livedata');
     $this->args = $args;
 	$this->modelbyminute = new Reportdatetime;
     $this->modelbyhour = new Reportdatetimebyhour;

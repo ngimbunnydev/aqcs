@@ -37,7 +37,11 @@ class ReportbranchController extends Controller
     private $protectme;
 
 	public function __construct(array $args){ //public function __construct(Array args){    
-    $this->obj_info['title'] = 'Province/Country';//__('label.livedata');
+        $this->protectme = [  
+            config('ccms.protectact.index'),
+
+            ];
+    $this->obj_info['title'] = 'Province/Country Report';//__('label.livedata');
     $this->args = $args;
     $this->model = new Reportdatetimebybranch;
 	

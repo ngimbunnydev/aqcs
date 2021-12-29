@@ -29,7 +29,11 @@ class LivedataController extends Controller
     
     private $protectme;
 
-	public function __construct(array $args){ //public function __construct(Array args){    
+	public function __construct(array $args){ //public function __construct(Array args){  
+        $this->protectme = [  
+            config('ccms.protectact.index'),
+
+            ];  
     $this->obj_info['title'] = __('label.livedata');
     $this->args = $args;
 		$this->model = new Airqualitymonitoring;

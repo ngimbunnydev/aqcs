@@ -695,7 +695,7 @@ class UserController extends Controller
             $rules['nativename'] ='required';
             $rules['level_id'] ='required|numeric|gt:0';
             $rules['branch_id'] ='required|numeric|gt:0';
-            $rules['wh_id'] ='required|numeric|gt:0';
+            //$rules['wh_id'] ='required|numeric|gt:0';
 
             $rules['password'] = 'min:6|required_with:password_confirmation|same:password_confirmation';
             $rules['password_confirmation'] = 'min:6';
