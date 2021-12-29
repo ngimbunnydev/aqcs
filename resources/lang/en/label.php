@@ -176,6 +176,13 @@ return [
   'lb107'  =>  'Position',
   'lb39' => 'General',
   'lb192' => 'Local Region',
+  /*
+  | Backup
+  */
+  'lb228' => 'Backups',
+  'lb229' => 'Database',
+  'lb230' => 'Pictures',
+  
 ];
 
 
