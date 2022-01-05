@@ -62,7 +62,7 @@ class ApiAccessController extends Controller
       $model = new Frontlivemap;
       $results =  $model
         ->join('aqcs_location','airqty_livemap.location_id', '=', 'aqcs_location.location_id')
-        ->select(\DB::raw("airqty_livemap.location_id, latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS qty"))
+        ->select(\DB::raw("airqty_livemap.location_id, latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS avg_qty"))
         ->groupBy('airqty_livemap.location_id')
         ->groupBy('airtype_id');
 
