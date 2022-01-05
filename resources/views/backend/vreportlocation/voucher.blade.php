@@ -43,6 +43,8 @@ $data = array_reverse($data);
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Roboto:wght@100;300;400;500&family=Moul&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Siemreap:wght@400;700&family=Roboto:wght@100;300;400;500&family=Siemreap&display=swap" rel="stylesheet">
+
 <style>
 
     #cash-flow, #sales-echart, .dashboard-echart{width: auto;}
