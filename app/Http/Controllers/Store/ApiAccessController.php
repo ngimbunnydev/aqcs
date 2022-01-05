@@ -53,14 +53,31 @@ class ApiAccessController extends Controller
 
     }
 
-    public function index(){
+    public function index(Request $request){
+      $dflang = config('ccms.multilang')[0];
+      $airtype = Airtype::where('trash', '!=', 'yes')
+        ->select(\DB::raw("airtype_id, code, standard_qty, JSON_UNQUOTE(title->'$.".$dflang[0]."') as title, unit, color, noted"
+                                                ))->get()->keyBy('airtype_id')->toArray();
+   
       $model = new Frontlivemap;
-      $livemap =  $model
+      $results =  $model
         ->join('aqcs_location','airqty_livemap.location_id', '=', 'aqcs_location.location_id')
         ->select(\DB::raw("airqty_livemap.location_id, latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS qty"))
         ->groupBy('airqty_livemap.location_id')
         ->groupBy('airtype_id');
-      dd($livemap->get()->toArray());
+
+        if ($request->input('airtype') && !empty($request->input('airtype'))) 
+        {
+            $airtype_id=$request->input('airtype');
+            $results = $results->where('airtype_id', $airtype_id); 
+        }
+        else{
+            $first_value = reset($airtype);
+            $airtype_id=$first_value['airtype_id'];
+            $results = $results->where('airtype_id', $airtype_id); 
+        }
+
+      dd($results->get()->toArray());
       return response()->json([
         'status' => true,
         'message' => 'hello',
