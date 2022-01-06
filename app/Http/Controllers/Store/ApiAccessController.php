@@ -78,9 +78,7 @@ class ApiAccessController extends Controller
         //     $results = $results->where('airtype_id', $airtype_id); 
         // }
 
-        $df_airtype = reset($airtype);  
-      dd($results->get()->toArray());
-
+      $df_airtype = reset($airtype);  
       return response()->json([
         'status' => true,
         'livemap' => $results->get()->toArray(),
