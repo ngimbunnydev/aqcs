@@ -63,7 +63,7 @@ class ApiAccessController extends Controller
       $results =  $model
         ->join('aqcs_location','airqty_livemap.location_id', '=', 'aqcs_location.location_id')
         //->join('aqcs_airtype','airqty_livemap.airtype_id', '=', 'aqcs_airtype.airtype_id')
-        ->select(\DB::raw("airqty_livemap.location_id, latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS avg_qty"))
+        ->select(\DB::raw("airqty_livemap.location_id, JSON_UNQUOTE(aqcs_location.title->'$.en') as title, aqcs_location.code as code,  latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS avg_qty"))
         ->groupBy('airqty_livemap.location_id')
         ->groupBy('airtype_id');
 
@@ -79,7 +79,8 @@ class ApiAccessController extends Controller
         // }
 
         $df_airtype = reset($airtype);  
-      //dd($results->get()->toArray());
+      dd($results->get()->toArray());
+
       return response()->json([
         'status' => true,
         'livemap' => $results->get()->toArray(),
