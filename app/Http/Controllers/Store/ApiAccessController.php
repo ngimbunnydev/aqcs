@@ -62,25 +62,29 @@ class ApiAccessController extends Controller
       $model = new Frontlivemap;
       $results =  $model
         ->join('aqcs_location','airqty_livemap.location_id', '=', 'aqcs_location.location_id')
+        //->join('aqcs_airtype','airqty_livemap.airtype_id', '=', 'aqcs_airtype.airtype_id')
         ->select(\DB::raw("airqty_livemap.location_id, latlong, airtype_id,GROUP_CONCAT(record_datetime) as record_datetime, GROUP_CONCAT(qty) as group_qty, round(avg(qty),2) AS avg_qty"))
         ->groupBy('airqty_livemap.location_id')
         ->groupBy('airtype_id');
 
-        if ($request->input('airtype') && !empty($request->input('airtype'))) 
-        {
-            $airtype_id=$request->input('airtype');
-            $results = $results->where('airtype_id', $airtype_id); 
-        }
-        else{
-            $first_value = reset($airtype);
-            $airtype_id=$first_value['airtype_id'];
-            $results = $results->where('airtype_id', $airtype_id); 
-        }
+        // if ($request->input('airtype') && !empty($request->input('airtype'))) 
+        // {
+        //     $airtype_id=$request->input('airtype');
+        //     $results = $results->where('airtype_id', $airtype_id); 
+        // }
+        // else{
+        //     $first_value = reset($airtype);
+        //     $airtype_id=$first_value['airtype_id'];
+        //     $results = $results->where('airtype_id', $airtype_id); 
+        // }
 
-      dd($results->get()->toArray());
+        $df_airtype = reset($airtype);  
+      //dd($results->get()->toArray());
       return response()->json([
         'status' => true,
-        'message' => 'hello',
+        'livemap' => $results->get()->toArray(),
+        'airtype' => $airtype,
+        'df_airtype' => $df_airtype
       ]);
     }
 
