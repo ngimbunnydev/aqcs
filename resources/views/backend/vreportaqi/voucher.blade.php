@@ -1,31 +1,5 @@
 @php
-$using_airtype = $airtype[$airtype_id];
-$airtype_combo = [];
-foreach ($airtype as $item){
 
-	$airtype_combo[$item['airtype_id']]= $item['title'];
-}
-
-$data = [];
-$count_branch = count($branch);
-if(empty($results)){
-	
-	for($i=0; $i<$count_branch; $i++){
-		$data[$i] = '';
-	}
-}
-else{
-	foreach ($branch as $key => $item){
-		//dd($results[$key]['qty']);
-		if(isset($results[$key])){
-			$data[] = $results[$key]['qty'];
-		}
-		else {
-			$data[] = '';
-		}
-		
-	}
-}
 @endphp
 
 @extends('backend.pdf_layout')
@@ -34,20 +8,29 @@ else{
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta charset="utf-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  
   <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Roboto:wght@100;300;400;500&family=Moul&display=swap" rel="stylesheet">
   <style>
-
-      #cash-flow, #sales-echart, .dashboard-echart{width: auto;}
-      
-      @media only screen and (max-width: 736px){
-          #cash-flow {
-              margin-top: 30px;
-          }
-      }
 
     .khtitle{
           font-family: 'Moul', cursive;
         }
+	table, td, th {
+		border: 1px solid black;
+	}
+	td{
+		padding: 5px;
+	}
+	th{font-weight: bold; font-size: 17px}
+
+	#table1 {
+		border-collapse: separate;
+	}
+
+	#table2 {
+		border-collapse: collapse;
+		width: 100%;
+	}
 
   </style>
 
@@ -55,85 +38,8 @@ else{
 
 
 @section('footer_import')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.8.0/echarts.min.js"></script>
 <script>
-	var cashFlowEchart = echarts.init(document.getElementById('cash-flow'));
-	var option;
 
-	option = {
-		title:{
-			text:"កំហាប់ភាគល្អិតនិចល {{$using_airtype['title']}} ក្នុងបរិយាកាសនៃប្រទេសកម្ពុជា",
-			textStyle: {
-				color: 'orange'
-			},
-			x: 'center',
-			position: 'bottom'
-		},
-  xAxis: {
-    type: 'category',
-    data: [{!!"'".implode("','", array_values($branch))."'"!!}]
-  },
-  yAxis: {
-    type: 'value',
-	max:"{{(int)$using_airtype['standard_qty']+10}}"
-  },
-  series: [
-    {
-	label: {
-        show: true,
-        position: 'top'
-      },
-	  itemStyle: {
-        borderColor: '#ddd',
-        color: 'orange'
-      },
-      data: [{!!"'".implode("','", $data)."'"!!}],
-      type: 'bar',
-      showBackground: true,
-      backgroundStyle: {
-        color: 'rgba(180, 180, 180, 0.2)'
-      },
-	  barWidth: '20%',
-      markLine: {
-                  symbol:"none",
-                 data: [
-					 {
-						 name: 'ស្តង់ដា', 
-					 	yAxis: "{{(int)$using_airtype['standard_qty']}}",
-						 label: {
-							formatter: '{b}',
-							position: 'insideMiddleTop',
-							color: 'red',
-							fontStyle: 'italic',
-							fontWeight: 'bold',
-							fontSize: 14,
-							//fontFamily: 'Helvetica',
-							
-							// lineHeight: 25,
-							// width: 200,
-							// height: 200,
-							// tag: 'asdasdasdasdasd',
-							
-							
-							
-						}
-					 }
-					 ],
-                 lineStyle: {
-                    color: 'red',
-                    type: 'solid',
-                    width: 3
-                },
-            }
-    }
-  ]
-};
-
-	cashFlowEchart.setOption(option);
-	
-	window.onresize = function() {
-		cashFlowEchart.resize();
-	};
 	
 </script>
 @stop
@@ -158,36 +64,61 @@ else{
 		</div>
 	</div>
 	
-	<div style="width:100%; text-align: center;">
+	<div style="width:100%; text-align: center; padding:10px 0px">
 			<span class="khtitle" style="color: rgb(57, 104, 175); font-size:16px;">
-				សេចក្តីជូនដំណឹង
+				សេចក្តីជូនដំណឹងស្តីពី 
 				<br>
-				អំពីស្ថានភាពគុណភាពខ្យល់ ថ្ងៃទី ខែ ឆ្នាំ២០២១ 
+				លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់(AQI)នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹម
 				<br>
-				ដែលមានទីតាំងស្ថិតនៅក្នុង
+				ម៉ោង ៧ព្រឹក ថ្ងៃទី១៣ ខែមករា ឆ្នាំ២០២២
+				<br>
+				
 			</span>
-			<span style="font-size: 15px">
-				<br>
-				កម្រិតភាគល្អិតនិចល PM2.5 នៅក្នុងខ្យល់ជាមធ្យម 2.79 μg/m3 ធៀបទៅនឹងកម្រិតស្តង់ដា PM2.5 គឺ ៥០ μg/m3 
-ក្នុងរយៈពេល២៤ម៉ោង	
+			<span style="color: rgb(57, 104, 175); font-size:18px;">
+				Announcement<br>
+				The result of Air Quality Index in Phnom Penh and provinces on 13 January 2022 at 7AM
 			</span>
+
 		</div>
 
 	
 
 </div>
 
-<div style="float:left; width:100%; border:1px solid #ddd">
+<div style="float:left; width:100%; padding:5px 0px 20px 0px">
     
-    <div id="cash-flow" style="height: 400px !important"></div>
-</div>
-<div style="float:left;padding:10px; margin-top:10px; border:1px solid #000; font-size:15px;">
-	{{$using_airtype['noted']}}
+	<table id="table2">			
+		<thead>
+			<th>ទីតាំង</th>
+			<th>សន្ទស្សន៍គុណភាពខ្យល់ (AQI)</th>
+			<th>ការវាយតម្លៃ</th>
+			<th>ការពិពណ៌នា</th>
+		</thead>
+		<tbody>
+			@foreach ($results as $row)
+			
+			<tr>
+				<td>
+					{{ $location[$row['location_id']]??""}}
+				</td>
+
+				<td>
+					{{$row['result']['qty']}}
+				</td>
+					
+				<td style="background-color:{{$row['result']['color']??'#fff'}}; text-align:center">
+					<span style="color: #fff">{{$row['result']['evaluate']}}</span>
+				</td>
+
+				<td>
+					{!!$row['result']['text']!!}
+				</td>
+			</tr>
+			@endforeach
+		</tbody>
+	</table>
 </div>
 
-<div style="float: left; width:100%; text-align: center">
-	អគារមរតកតេជោ ដីឡូលេខ៥០៣ ផ្លូវកៅស៊ូអមមាត់ទន្លេបាសាក់ សង្កាត់ទន្លេបាសាក់ ខណ្ឌចំការមន រាជធានីភ្នំពេញ ទូរសព្ទ:០២៣ ២៣៥ ០០៤/ ០២៣ ២៣៥ ០០៦
-</div>
 @stop
 
 @push('customcss')

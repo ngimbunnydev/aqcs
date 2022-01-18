@@ -8,11 +8,13 @@ use Validator;
 use Image;
 #use Illuminate\Validation\Rule;
 
-use App\Models\Backend\Airqualitymonitoring;
-use App\Models\Backend\Airqualitydetail;
+
 use App\Models\Backend\Device;
 use App\Models\Backend\Location;
 use App\Models\Backend\Airtype;
+use App\Models\Backend\Benchmark;
+use App\Models\Backend\Color;
+use App\Models\Backend\Evaluation;
 use App\Models\Backend\Branch;
 use App\Models\Backend\Frontlivemap;
 
@@ -128,6 +130,18 @@ class ReportaqiController extends Controller
     {
         $default=$this->default();
         $airtype = $default['airtype'];
+        $benchmark = Benchmark::
+                leftJoin('aqcs_airtype','aqcs_benchmark.airtype_id', '=', 'aqcs_airtype.airtype_id')
+                ->select(\DB::raw("benchmark_id AS id, evaluation_id,rangfrom,rangto,indexfrom,indexto, cl_id,
+                    JSON_UNQUOTE(aqcs_airtype.title->'$.".$this->dflang[0]."') AS airtype,
+                    JSON_UNQUOTE(aqcs_benchmark.description->'$.".$this->dflang[0]."') AS description"
+                                                            )
+                );
+
+        $index_rang =  Benchmark::
+        select(\DB::raw("airtype_id, min(rangto) as minrangto, max(rangto) as maxrangto, min(indexto) as minindexto, max(indexto) as maxindexto"))
+        ->groupby('airtype_id')->get()->keyby('airtype_id')->toArray();
+        
         $data = [];
         if(!$results->get()->isEmpty()){
             $results = $results->get();
@@ -135,19 +149,47 @@ class ReportaqiController extends Controller
                 
                 $id = explode(',', $record->airtype);
 				$val = explode(',', $record->qty);
-                //work with aqi function and combine///but now skip
-
-                ///
-				$airtype_qty = array_combine($id, $val);
-                $max_qty = max($val);
-                $max_aritype = array_search($max_qty, $airtype_qty);
+                $airtype_qty = array_combine($id, $val);
                 
+                //work with aqi function for evaluate new qty
+                $cal_result = [];
+                foreach($airtype_qty as $id => $qty){
 
+                    $newqty = 0;
+                    $cacl_aqi = [];
+                    if(isset($index_rang[$id])){
+                        $avg_qty = $qty;
+                        $clow   = $index_rang[$id]['minrangto'];
+                        $chight = $index_rang[$id]['maxrangto'];
+                        $ilow   = $index_rang[$id]['minindexto'];
+                        $ihight = $index_rang[$id]['maxindexto'];
+                        $cacl_aqi = cacl_aqi($avg_qty,$clow,$chight,$ilow,$ihight);
+                        $newqty = $cacl_aqi['qty'];
+                        
+                    }
+                    $cal_result[$id] = $cacl_aqi;
+                    $airtype_qty[$id] = $newqty;
+                }
+                ///
+				
+                $max_qty = max(array_values($airtype_qty));
+                $max_aritype = array_search($max_qty, $airtype_qty);
+
+                /*
+                $benchmark_detail = clone $benchmark;
+                $benchmark_detail = $benchmark_detail->where('aqcs_benchmark.airtype_id', $max_aritype)->get();
+
+                if($benchmark_detail->isEmpty()){
+                        $benchmark_detail = $benchmark->where('aqcs_benchmark.airtype_id', 1)->get();
+                }
+                */
+
+          
                 $data[] = [
                     'location_id' => $record->location_id,
                     'record_datetime' => $record->record_datetime,
-                    'max_aritype' => $max_aritype,
-                    'max_qty' => $max_qty,
+                    'airtype_id' => $max_aritype,
+                    'result' => $cal_result[$max_aritype]??[]
                 ];
             }
         }
@@ -164,12 +206,13 @@ class ReportaqiController extends Controller
         $default=$this->default();
         $branch = $default['branch'];
         $airtype = $default['airtype'];
+        $location = $default['location'];
         #DEFIND MODEL#
         $results = $this->listingmodel();
         
         $sfp = $this->sfp($request, $results);
 
-    	return view('backend.v'.$this->obj_info['name'].'.index', compact('branch','airtype'))
+    	return view('backend.v'.$this->obj_info['name'].'.index', compact('branch','airtype', 'location'))
                 ->with(['act' => 'index'])
                 ->with(['obj_info' => $obj_info])
                 ->with($sfp)
@@ -181,51 +224,25 @@ class ReportaqiController extends Controller
     public function ptoexcel(Request $request){
         if ($request->isMethod('post')){
             //dd($request->input());
-            $type = $request->input('exportType');
+            
             /////////
             $obj_info=$this->obj_info;
             $args = $this->args;
             $default=$this->default();
             $branch = $default['branch'];
             $airtype = $default['airtype'];
+            $location = $default['location'];
             #DEFIND MODEL#
             $results = $this->listingmodel();
             $sfp = $this->sfp($request, $results);
             
-            if($type=='pdf'){
-                $blade = 'backend.v'.$this->obj_info['name'].'.voucher';
-                $previewdata= view($blade, compact('args', 'branch','airtype'))
+            $blade = 'backend.v'.$this->obj_info['name'].'.voucher';
+                $previewdata= view($blade, compact('args', 'branch','airtype','location'))
                 ->with(['act' => ''])
                 ->with(['obj_info' => $obj_info])
-                ->with($sfp);
-
-                //$path = resource_path('views/backend/v'.$this->obj_info['name'].'/topdf.html');
-                //\File::put($path,$previewdata);
-              
-              $data = [
-                    'id' => 'aaa'
-                  ];
-      
-              $return = [
-                          'callback' => 'savesuccess',
-                          'container' => '',
-                          'data'  => $data,
-                          'message' => '',
-                          'success' => ''
-                      ];
-            
-              
+                ->with($sfp);              
               
               return $previewdata;
-                
-            }
-            else{
-                $blade = get_view_by_db_name($this->obj_info['name'], 'p2excel');//b2excel
-                return view($blade, compact('args', 'branch','airtype'))
-                  ->with(['act' => ''])
-                  ->with(['obj_info' => $obj_info])
-                  ->with($sfp);
-            }
             
             
 
