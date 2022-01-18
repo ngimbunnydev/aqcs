@@ -187,8 +187,9 @@
 									)}}">{{ $row->title }}</a>
 														</td>
 
-														<td>
-															{{ $row->code }}
+														<td style="color:{{$row->code??'#000'}}">
+															
+																{{ $row->code??''}}
 														</td>
 
 
