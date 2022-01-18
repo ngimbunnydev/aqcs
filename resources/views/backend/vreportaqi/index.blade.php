@@ -56,7 +56,7 @@
 				form.method = "POST";
 				form.action = "{{ url_builder($obj_info['routing'],[$obj_info['name'],'ptoexcel']) }}";  
 				form.target = "_blank";
-				
+
 				elToken.value='{{ csrf_token() }}';
 				elToken.name="_token";
 				elToken.type="hidden";
@@ -105,11 +105,11 @@
 			<div class="col-xs-12">
 				<div style="padding:10px 0px; text-align: center; font-size: 16px">
 					សេចក្តីជូនដំណឹង
- ស្តីពី លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់(AQI)នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹមម៉ោង ៧ព្រឹក ថ្ងៃទី១៣ ខែមករា ឆ្នាំ២០២២
+ ស្តីពី លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់(AQI)នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹម {{date('d F Y H:i:s')}}
  <br>
 Announcement
-The result of Air Quality Index in Phnom Penh and provinces on 13 January 2022 at 7AM
-
+The result of Air Quality Index in Phnom Penh and provinces on {{date('d F Y H:i:s')}}
+					
 				</div>
 				<table id="dynamic-table" class="table table-striped table-bordered table-hover">			
 					<thead>

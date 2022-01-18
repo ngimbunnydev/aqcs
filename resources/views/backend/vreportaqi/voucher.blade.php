@@ -70,13 +70,13 @@
 				<br>
 				លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់(AQI)នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹម
 				<br>
-				ម៉ោង ៧ព្រឹក ថ្ងៃទី១៣ ខែមករា ឆ្នាំ២០២២
+				{{date('d F Y H:i:s')}}
 				<br>
 				
 			</span>
 			<span style="color: rgb(57, 104, 175); font-size:18px;">
 				Announcement<br>
-				The result of Air Quality Index in Phnom Penh and provinces on 13 January 2022 at 7AM
+				The result of Air Quality Index in Phnom Penh and provinces on {{date('d F Y H:i:s')}}
 			</span>
 
 		</div>
