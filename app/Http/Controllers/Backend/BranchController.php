@@ -22,7 +22,7 @@ class BranchController extends Controller
     private $dflang;
     private $request;
     private $rcdperpage=-1; #record per page#
-    private $obj_info=['name'=>'branch','title'=>'Branch','routing'=>'admin.controller','icon'=>'<i class="fa fa-building" aria-hidden="true"></i>'];
+    private $obj_info=['name'=>'branch','title'=>'Province','routing'=>'admin.controller','icon'=>'<i class="fa fa-building" aria-hidden="true"></i>'];
 
     private $protectme;
 

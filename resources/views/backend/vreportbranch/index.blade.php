@@ -232,7 +232,8 @@ else{
 
 				form.method = "POST";
 				form.action = "{{ url_builder($obj_info['routing'],[$obj_info['name'],'ptoexcel']) }}";   
-
+				form.target = "_blank";
+				
 				elToken.value='{{ csrf_token() }}';
 				elToken.name="_token";
 				elToken.type="hidden";

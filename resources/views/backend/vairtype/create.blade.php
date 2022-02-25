@@ -243,7 +243,7 @@
                               
 				<div class='table_cell'>Unit</div>
 				<div class='table_cell'>
-					<input type="text" class="form-control input-sm" name="unit[]" id="unit" placeholder="" value="{{$unit[$i] ?? '' }}">
+					<input type="text" class="form-control input-sm" name="unit[]" id="unit" placeholder="" value="{!!$unit[$i] ?? '' !!}">
 				</div>          
 								
 			</div><!-- /.cell -->

@@ -178,7 +178,7 @@
 														<th>@lang('label.code')</th>
 														<th>Latitude Longitude</th>
 														
-                           								 <th width="80">
+                           								 {{-- <th width="80">
 															{!!
 																orderMenu(
 																[	'caption'=>'Order',
@@ -192,7 +192,7 @@
 																$perpage_query, 
 																$obj_info)
 															!!}
-														</th>
+														</th> --}}
 
 														<th width="120" class="width-480"></th>
 													</tr>
@@ -231,11 +231,11 @@
 															{{ $row->latlong }}
 														</td>
 
-                           								 <td>
+                           								 {{-- <td>
 															<div class="input-group">
 																	<input type="text" name="ordering" id="{{$row->id}}" class="spinbox-input form-control input-sm text-center ordering" value="{{$row->ordering??0}}">
 															</div> 
-														</td>
+														</td> --}}
 														<td>
 															@include('backend.widget.actmenu',['rowid'=>$row->id ,'btnedit' => 'yes', 'btnduplicate' => 'yes', 'btndelete' => 'yes','btnrestore' => 'yes','btndestroy' => 'yes'])
 														</td>

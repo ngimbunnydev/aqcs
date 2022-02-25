@@ -86,7 +86,7 @@ class DeviceController extends Controller
         #DEFIND MODEL#
         return $this->model
         ->leftJoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
-        ->select(\DB::raw(   $this->fprimarykey." AS id, aqcs_device.code as code, aqcs_device.ordering as ordering,
+        ->select(\DB::raw(   $this->fprimarykey." AS id, aqcs_device.device_index as device_index, aqcs_device.ordering as ordering,
         model, status,
         JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') AS location,
         JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') AS title"

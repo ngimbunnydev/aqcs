@@ -160,7 +160,7 @@
 															!!}
 														</th>
 
-														<th class="hidden-480">@lang('label.add')</th>
+														<th class="hidden-480">@lang('label.address')</th>
 														<th class="hidden-480">@lang('label.phone')</th>
 														<th class="hidden-480">@lang('label.pic')</th>
 														

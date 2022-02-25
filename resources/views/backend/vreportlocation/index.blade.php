@@ -392,7 +392,7 @@ $data = array_reverse($data);
 
 							<div class="form-group col-md-2">
 
-							<label class="frm-label" for="title">Air Type</label>
+							<label class="frm-label" for="title">@lang('label.lb17')</label>
 							<select class="form-control" name="airtype" id="airtype">
 								{!!cmb_listing($airtype_combo,[request()->get('airtype') ?? ''],'','')!!} 					       
 														

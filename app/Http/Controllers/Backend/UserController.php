@@ -617,7 +617,7 @@ class UserController extends Controller
             $editid = $id;
         }
 
-        $input = $this->model->where($this->fprimarykey, (int)$editid)->where($this->fprimarykey,'<>',1)->get(); 
+        $input = $this->model->where($this->fprimarykey, (int)$editid)->where('level_id','<>',1)->get(); 
         if($input->isEmpty())
         {
             $routing=url_builder($obj_info['routing'],[$obj_info['name'],'index']);
@@ -807,7 +807,7 @@ class UserController extends Controller
             $editid = $id;
         }
 
-        $delete = $this->model->where($this->fprimarykey, (int)$editid)->where($this->fprimarykey,'<>',1)->where('branch_id', $this->args['userinfo']['branch_id'])->update(['trash'=>'yes']); 
+        $delete = $this->model->where($this->fprimarykey, (int)$editid)->where('level_id','<>',1)->where('branch_id', $this->args['userinfo']['branch_id'])->update(['trash'=>'yes']); 
         //return redirect()->back()->with('success', 'delete oK');
         if(!$delete)
         {

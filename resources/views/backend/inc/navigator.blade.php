@@ -104,7 +104,7 @@
             <li class="showhidemenu {{nav_checkactive(['airtype'],$obj_info['name'])}}">
 				<a href="#" class="dropdown-toggle">
 					<i class="menu-icon" style="color: #009978"><i class="fas fa-fan"></i></i>
-					<span class="menu-text"> @lang('label.lb17') </span>
+					<span class="menu-text"> @lang('label.lb17')</span>
 
 					<b class="arrow fa fa-angle-down"></b>
 				</a>
@@ -248,7 +248,7 @@
 					<li class="showhidemenu {{nav_checkactive(['reportlocation'],$obj_info['name'])}}">
 						<a href="{{ url_builder('admin.controller',['reportlocation']) }}">
 							<i class="menu-icon"><i class="fa fa-caret-right"></i></i>
-							Air Type
+							@lang('label.lb17')
 						</a>
 
 						<b class="arrow"></b>

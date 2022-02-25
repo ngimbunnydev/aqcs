@@ -262,14 +262,14 @@
 									<a href="#" id="newctype">New</a>
 								</span></label>
 				<select class="form-control input-sm" name="level_id" id="level_id">
-																	   
+								<option value="1">TOP ADMIN</option>								   
 								{!!cmb_listing($ctype,[$level_id ?? ''],'','')!!} 
 							</select>
 															  
 			</div>
 
 			<div class="col-xs-12 col-sm-6 col-lg-6 form-group">
-				<label class="frm-label" for="branch_id">@lang('label.lb31')<span class="red">*</span> <span class="badge badge-info new">
+				<label class="frm-label" for="branch_id">@lang('label.lb13')<span class="red">*</span> <span class="badge badge-info new">
 									<a href="#" id="newbranch">New</a>
 								</span></label>
 				<select class="form-control input-sm" name="branch_id" id="branch_id">

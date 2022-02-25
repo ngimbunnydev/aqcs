@@ -180,11 +180,7 @@
 														</th>
 
 														<th>
-															@lang('label.lb31')
-														</th>
-
-														<th>
-															@lang('label.lb32')
+															@lang('label.lb13')
 														</th>
 														
 														
@@ -243,9 +239,7 @@
 															{{ $branchlisting[$row->branch_id]??'' }}
 														</td>
 
-														<td class="green">
-															{{ $warehouselisting[$row->wh_id]??'' }}
-														</td>
+													
 														
 														<td class="blue">
 															

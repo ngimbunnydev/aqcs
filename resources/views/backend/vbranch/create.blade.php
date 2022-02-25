@@ -252,7 +252,7 @@
             <div class='theader'>
 			  
 			  <div class='table_header'>@lang('label.lb20') <span class="red">*</span></div>
-			  <div class='table_header'>@lang('label.add')</div>
+			  <div class='table_header'>@lang('label.address')</div>
 			  <div class='table_header'>@lang('label.phone')</div>
 			  <div class='table_header'>@lang('label.pic')</div>
 			  <div class='table_header'>&nbsp;</div>
@@ -287,7 +287,7 @@
 
                 <div class='table_small'>
                               
-                    <div class='table_cell'>@lang('label.add')</div>
+                    <div class='table_cell'>@lang('label.address')</div>
 					<div class='table_cell'>
 						<input type="text" class="form-control input-sm" name="address[]" id="address" placeholder="" value="{{$address[$i] ?? '' }}">
 					</div>          
@@ -387,7 +387,7 @@
 
                 <div class='table_small'>
                               
-                    <div class='table_cell'>@lang('label.add')</div>
+                    <div class='table_cell'>@lang('label.address')</div>
 					<div class='table_cell'>
 						<input type="text" class="form-control input-sm" name="address[]" id="address" placeholder="" value="">
 					</div>          

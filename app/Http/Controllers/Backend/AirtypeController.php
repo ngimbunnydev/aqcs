@@ -74,7 +74,7 @@ class AirtypeController extends Controller
     public function listingModel()
     {
         #DEFIND MODEL#
-        return $this->model->select(\DB::raw(   $this->fprimarykey." AS id, code, standard_qty, ordering,
+        return $this->model->select(\DB::raw(   $this->fprimarykey." AS id, unit, code, standard_qty, ordering,
         JSON_UNQUOTE(title->'$.".$this->dflang[0]."') AS title"
                                                 )
     );

@@ -113,19 +113,19 @@ return [
   'lb10' => 'Setting',
   'lb11' => 'User',
   'lb12' => 'User Permission',
-  'lb13' => 'Branch',
+  'lb13' => 'Province',
   'lb14' => 'System Setting',
   'lb15' => 'General',
 
   'lb16' => 'Device',
-  'lb17' => 'Air Type',
-  'lb18' => 'Benchmark Quality',
+  'lb17' => 'Parameter',
+  'lb18' => 'AQI',
   'lb19' => 'Air Quality',
 
   /*
   |Branch
   */
-  'lb20'  =>  'Branch Name',
+  'lb20'  =>  'Province Name',
   
   /*
   |Device

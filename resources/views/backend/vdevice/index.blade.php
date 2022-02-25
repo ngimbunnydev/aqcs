@@ -171,7 +171,7 @@
 														<th width="50">
 															{!!
 																orderMenu(
-																[	'caption'=>__('label.id'),
+																[	'caption'=>__('label.no'),
 																	'sort'=>'pmethod_id', 
 																	'current_sort'=>$sort, 
 																	'mdefault'=>'asc', 
@@ -183,6 +183,7 @@
 																$obj_info)
 															!!}															
 														</th>
+														<th>@lang('label.lb09')</th>
 
 														<th>
 															{!!
@@ -199,11 +200,12 @@
 																$obj_info)
 															!!}
 														</th>
-														<th>@lang('label.code')</th>
+														<th>@lang('label.id')</th>
 														<th>@lang('label.lb21')</th>
-														<th>@lang('label.lb09')</th>
+														
 														<th width="70" >@lang('label.status')</th>
-                            <th width="80">
+
+                            							{{-- <th width="80">
 															{!!
 																orderMenu(
 																[	'caption'=>'Order',
@@ -217,7 +219,7 @@
 																$perpage_query, 
 																$obj_info)
 															!!}
-														</th>
+														</th> --}}
 														<th width="120" class="width-480"></th>
 													</tr>
 												</thead>
@@ -242,6 +244,10 @@
 														</td>
 
 														<td>
+															{{ $row->location }}
+														</td>
+
+														<td>
 															<a href="{{url_builder($obj_info['routing'],
 										[$obj_info['name'],'edit',$row->id],
 										[]
@@ -249,14 +255,12 @@
 														</td>
 
 														<td>
-															{{ $row->code }}
+															{{ $row->device_index }}
 														</td>
 														<td>
 															{{ $row->model }}
 														</td>
-														<td>
-															{{ $row->location }}
-														</td>
+														
 														<td>
 															@if($row->status=='off')
 															<span class="label label-sm label-danger">
@@ -266,11 +270,12 @@
 															{{ config('ccms.device_status')[$row->status] }}
 															</span>
 														</td>
-                            							<td>
+
+                            							{{-- <td>
 															<div class="input-group">
 																	<input type="text" name="ordering" id="{{$row->id}}" class="spinbox-input form-control input-sm text-center ordering" value="{{$row->ordering??0}}">
 															</div> 
-														</td>
+														</td> --}}
 														<td>
 															@include('backend.widget.actmenu',['rowid'=>$row->id ,'btnedit' => 'yes', 'btnduplicate' => 'yes', 'btndelete' => 'yes','btnrestore' => 'yes','btndestroy' => 'yes'])
 														</td>
