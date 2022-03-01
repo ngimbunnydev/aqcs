@@ -1157,7 +1157,26 @@
     
 
     function ExcelDateToUnix($dateValue = 0) {         return ($dateValue - 25569) * 86400;     }
-
+    function month_in_khmer($index){
+      
+      $mont[1] = "មករា";
+      $mont[2] = "កុម្ភៈ";
+      $mont[3] = "មីនា";
+      $mont[4] = "មេសា";
+      $mont[5] = "ឧសភា";
+      $mont[6] = "មិថុនា";
+      $mont[7] = "កក្កដា";
+      $mont[8] = "សីហា";
+      $mont[9] = "កញ្ញា";
+      $mont[10] = "តុលា";
+      $mont[11] = "វិច្ឆិកា";
+      $mont[12] = "ធ្នូ";
+      
+      $index = (int)$index;
+      $index = ($index<1)?1:$index;
+      $index =($index>12)?1:$index;
+      return $mont[$index];
+    }
     function cacl_aqi($avg_qty,$clow,$chight,$ilow,$ihight){
         $result = 0;
         $textcolor = '';

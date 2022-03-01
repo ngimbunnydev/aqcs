@@ -164,8 +164,9 @@ class ReportlocationController extends Controller
      
         $device_info = Device::
             leftjoin('aqcs_location','aqcs_device.location_id', '=', 'aqcs_location.location_id')
+            ->leftjoin('pos_branch','pos_branch.branch_id', '=', 'aqcs_location.branch_id')
             ->where('aqcs_device.device_id', $device_id)
-            ->select(\DB::raw("device_index,JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') as location, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as device"))
+            ->select(\DB::raw("device_index,JSON_UNQUOTE(pos_branch.title->'$.".$this->dflang[0]."') as branch, JSON_UNQUOTE(aqcs_location.title->'$.".$this->dflang[0]."') as location, JSON_UNQUOTE(aqcs_device.title->'$.".$this->dflang[0]."') as device"))
             ->get()->toArray()[0];
         
         $results = $results->where($tablename.'.device_id', $device_id);  
@@ -335,6 +336,11 @@ class ReportlocationController extends Controller
         if ($request->isMethod('post')){
             //dd($request->input());
             $type = $request->input('exportType');
+            $fromdate = $request->input('fromdate');
+            $fromdate_array = [];
+            if(!empty($fromdate)){
+                $fromdate_array = explode('-', $fromdate);
+            }
             /////////
             $obj_info=$this->obj_info;
             $args = $this->args;
@@ -378,6 +384,7 @@ class ReportlocationController extends Controller
                 $previewdata= view($blade, compact('args','location', 'device', 'device_combo','airtype'))
                 ->with(['act' => ''])
                 ->with(['obj_info' => $obj_info])
+                ->with(['fromdate' => $fromdate_array])
                 ->with($sfp);
 
                 //$path = resource_path('views/backend/v'.$this->obj_info['name'].'/topdf.html');

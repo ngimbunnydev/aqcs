@@ -244,6 +244,7 @@ $data = array_reverse($data);
 
 				form.method = "POST";
 				form.action = "{{ url_builder($obj_info['routing'],[$obj_info['name'],'ptoexcel']) }}";   
+				form.target = "_blank";
 
 				elToken.value='{{ csrf_token() }}';
 				elToken.name="_token";
@@ -443,6 +444,10 @@ $data = array_reverse($data);
 								<!-- PAGE CONTENT BEGINS -->
 								<h3 class="header smaller lighter purple">
 									@if(!empty($device_info))
+										<b>{{$device_info['branch']}}</b>
+										<small>
+										<i class="ace-icon fa fa-angle-double-right"></i>
+										</small>
 										{{$device_info['location']}}
 										<small>
 											<i class="ace-icon fa fa-angle-double-right"></i>
