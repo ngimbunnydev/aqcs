@@ -68,9 +68,10 @@
 			<span class="khtitle" style="color: rgb(57, 104, 175); font-size:16px;">
 				សេចក្តីជូនដំណឹងស្តីពី 
 				<br>
-				លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់(AQI)នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹម
+				លទ្ធផលសន្ទស្សន៍គុណភាពខ្យល់ (AQI) នៅក្នុងរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្តត្រឹម
 				<br>
-				{{date('d F Y H:i:s')}}
+				ថ្ងៃទី {{num_in_khmer(date('d'))}} ខែ {{month_in_khmer(date('m'))}} ឆ្នាំ {{num_in_khmer(date('Y'))}}
+				វេលាម៉ោង {{num_in_khmer(date('H')).":".num_in_khmer(date('i')).":".num_in_khmer(date('s'))}}
 				<br>
 				
 			</span>

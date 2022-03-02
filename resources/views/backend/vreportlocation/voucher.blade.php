@@ -34,7 +34,8 @@ foreach ($results as $row){
 }
 $x_axis_data = array_reverse($x_axis_data);
 $data = array_reverse($data);
-
+$average = collect($data)->avg();
+$average = round($average, 2);
 @endphp
 
 @extends('backend.pdf_layout')
@@ -175,14 +176,14 @@ $data = array_reverse($data);
 				<br>
 				អំពីស្ថានភាពគុណភាពខ្យល់ 
 				@if(!empty($fromdate))
-				ថ្ងៃទី {{$fromdate[0]}} ខែ {{month_in_khmer($fromdate[1])}} ឆ្នាំ {{$fromdate[2]}} 
+				ថ្ងៃទី {{num_in_khmer($fromdate[0])}} ខែ {{month_in_khmer($fromdate[1])}} ឆ្នាំ {{num_in_khmer($fromdate[2])}}
 				@endif
 				<br>
 				ដែលមានទីតាំងស្ថិតនៅក្នុង {{$device_info['location']}}&nbsp;&nbsp;{{$device_info['branch']}}
 			</span>
 			<span style="font-size: 15px">
 				<br>
-				កម្រិតភាគល្អិតនិចល {{$using_airtype['title']}} នៅក្នុងខ្យល់ជាមធ្យម 2.79 {!!$using_airtype['unit']??''!!} ធៀបទៅនឹងកម្រិតស្តង់ដា {{$using_airtype['title']}} គឺ {{(int)$using_airtype['standard_qty']}} {!!$using_airtype['unit']??''!!} 
+				កម្រិតភាគល្អិតនិចល {{$using_airtype['title']}} នៅក្នុងខ្យល់ជាមធ្យម {{$average}} {!!$using_airtype['unit']??''!!} ធៀបទៅនឹងកម្រិតស្តង់ដា {{$using_airtype['title']}} គឺ {{(int)$using_airtype['standard_qty']}} {!!$using_airtype['unit']??''!!} 
 ក្នុងរយៈពេល២៤ម៉ោង	
 			</span>
 		</div>

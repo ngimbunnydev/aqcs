@@ -270,6 +270,11 @@ class ReportbranchController extends Controller
         if ($request->isMethod('post')){
             //dd($request->input());
             $type = $request->input('exportType');
+            $fromdate = $request->input('fromdate');
+            $fromdate_array = [];
+            if(!empty($fromdate)){
+                $fromdate_array = explode('-', $fromdate);
+            }
             /////////
             $obj_info=$this->obj_info;
             $args = $this->args;
@@ -285,6 +290,7 @@ class ReportbranchController extends Controller
                 $previewdata= view($blade, compact('args', 'branch','airtype'))
                 ->with(['act' => ''])
                 ->with(['obj_info' => $obj_info])
+                ->with(['fromdate' => $fromdate_array])
                 ->with($sfp);
 
                 //$path = resource_path('views/backend/v'.$this->obj_info['name'].'/topdf.html');

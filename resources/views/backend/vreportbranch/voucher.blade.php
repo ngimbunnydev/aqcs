@@ -26,6 +26,8 @@ else{
 		
 	}
 }
+$average = collect($data)->avg();
+$average = round($average, 2);
 @endphp
 
 @extends('backend.pdf_layout')
@@ -162,13 +164,14 @@ else{
 			<span class="khtitle" style="color: rgb(57, 104, 175); font-size:16px;">
 				សេចក្តីជូនដំណឹង
 				<br>
-				អំពីស្ថានភាពគុណភាពខ្យល់ ថ្ងៃទី ខែ ឆ្នាំ២០២១ 
-				<br>
-				ដែលមានទីតាំងស្ថិតនៅក្នុង
+				អំពីស្ថានភាពគុណភាពខ្យល់នៅក្នុងរាជធានីភ្នំពេញ និងបណ្តាខេត្ត
+				@if(!empty($fromdate))
+				ថ្ងៃទី {{num_in_khmer($fromdate[0])}} ខែ {{month_in_khmer($fromdate[1])}} ឆ្នាំ {{num_in_khmer($fromdate[2])}}
+				@endif
 			</span>
 			<span style="font-size: 15px">
 				<br>
-				កម្រិតភាគល្អិតនិចល PM2.5 នៅក្នុងខ្យល់ជាមធ្យម 2.79 μg/m3 ធៀបទៅនឹងកម្រិតស្តង់ដា PM2.5 គឺ ៥០ μg/m3 
+				កម្រិតភាគល្អិតនិចល {{$using_airtype['title']}} នៅក្នុងខ្យល់ជាមធ្យម {{$average}} {!!$using_airtype['unit']??''!!} ធៀបទៅនឹងកម្រិតស្តង់ដា {{$using_airtype['title']}} គឺ {{(int)$using_airtype['standard_qty']}} {!!$using_airtype['unit']??''!!} 
 ក្នុងរយៈពេល២៤ម៉ោង	
 			</span>
 		</div>

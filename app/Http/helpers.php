@@ -1157,26 +1157,35 @@
     
 
     function ExcelDateToUnix($dateValue = 0) {         return ($dateValue - 25569) * 86400;     }
+
     function month_in_khmer($index){
       
-      $mont[1] = "មករា";
-      $mont[2] = "កុម្ភៈ";
-      $mont[3] = "មីនា";
-      $mont[4] = "មេសា";
-      $mont[5] = "ឧសភា";
-      $mont[6] = "មិថុនា";
-      $mont[7] = "កក្កដា";
-      $mont[8] = "សីហា";
-      $mont[9] = "កញ្ញា";
-      $mont[10] = "តុលា";
-      $mont[11] = "វិច្ឆិកា";
-      $mont[12] = "ធ្នូ";
+      $mont= ["","មករា","កុម្ភៈ","មីនា","មេសា","ឧសភា","មិថុនា","កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ"];
       
       $index = (int)$index;
-      $index = ($index<1)?1:$index;
-      $index =($index>12)?1:$index;
+      $index = ($index<1)?0:$index;
+      $index =($index>12)?0:$index;
       return $mont[$index];
     }
+    function num_in_khmer($num_en){
+     
+      $length = strlen($num_en);
+      
+      $num_en = str_split($num_en);
+      
+      $num_kh = ["០", "១", "២", "៣", "៤", "៥", "៦", "៧", "៨", "៩"];
+      $new_str='';
+      for($i=0; $i<$length; $i++){
+        $index = $num_en[$i];
+        $index = (int)$index;
+        if($index>=0 && $index<=9){
+          $new_str.=$num_kh[$index];
+        }
+      }
+      return $new_str;
+    }
+
+
     function cacl_aqi($avg_qty,$clow,$chight,$ilow,$ihight){
         $result = 0;
         $textcolor = '';
