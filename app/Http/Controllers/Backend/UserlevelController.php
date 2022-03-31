@@ -59,7 +59,16 @@ class UserlevelController extends Controller
             //echo $classname.'<br>';
             $classPath = 'App\Http\Controllers\Backend\\' .$classname;
 
-            if($classname!='AdminLoginController' && $classname!='AdminForgetController' && $classname!='UserlevelController')
+            if($classname!='AdminLoginController' 
+            && $classname!='AdminForgetController' 
+            && $classname!='UserlevelController' 
+            && $classname!='TableController'
+            && $classname!='SizeController'
+            && $classname!='SystemconfigController'
+            && $classname!='SystrackingController'
+            && $classname!='GeneralController'
+            && $classname!='ExcelexportController'
+            )
             {
                 $reflection = new \ReflectionClass($classPath);
              
