@@ -24,13 +24,16 @@ if(request()->get('datatype')=='hour'){
 elseif(request()->get('datatype')=='day') {
 	$dateformat = 'Y-m-d';
 }
+
 foreach ($results as $row){
+	
 	$x_axis_data[] = date($dateformat, strtotime($row->record_datetime));
 	$id = explode(',', $row->airtype_id);
 	$val = explode(',', $row->qty);
 	$data = array_combine($id, $val);
+	
 	foreach ($airtype as $item){
-		$airtype_data[$item['title']][] = $data[$item['airtype_id']];
+		$airtype_data[$item['title']][] = $data[$item['airtype_id']]??'na';
 	}
 	
 	
