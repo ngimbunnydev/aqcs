@@ -185,10 +185,16 @@
 			  <div class='table_header'>@lang('label.id') <span class="red">*</span></div>
 			  <div class='table_header'>@lang('label.lb21')</div>
 			  <div class='table_header'>@lang('label.phonenum')</div>
+			  {{-- (Buy Date, Install Date, Donor(text), Remark(text)) --}}
+			  <div class='table_header'>Buy Date</div>
+			  <div class='table_header'>Install Date</div>
+			  <div class='table_header'>Doner</div>
+			  <div class='table_header'>Remark</div>
+
         	  <div class='table_header'>@lang('label.lb09')</div>
 			  
               <div class='table_header'>@lang('label.status')</div>
-			  <div class='table_header'>@lang('ccms.ordering')</div>
+			  {{-- <div class='table_header'>@lang('ccms.ordering')</div> --}}
 			  <div class='table_header'>&nbsp;</div>
 			</div> 
 
@@ -247,6 +253,42 @@
 								
 			</div><!-- /.cell -->
 
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Buy Date</div>
+			   <div class='table_cell'>
+				 <input type="text" class="form-control input-sm" name="buydate[]" id="buydate" placeholder="" value="{{$buydate[$i] ?? '' }}">
+			   </div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Install Date</div>
+			   <div class='table_cell'>
+				 <input type="text" class="form-control input-sm" name="installdate[]" id="installdate" placeholder="" value="{{$installdate[$i] ?? '' }}">
+			   </div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Donor</div>
+			   <div class='table_cell'>
+				 <input type="text" class="form-control input-sm" name="donor[]" id="donor" placeholder="" value="{{$donor[$i] ?? '' }}">
+			   </div>          
+								
+			</div><!-- /.cell -->
+
+			<div class='table_small'>
+                              
+				<div class='table_cell'>Remark</div>
+			   <div class='table_cell'>
+				 <input type="text" class="form-control input-sm" name="remark[]" id="remark" placeholder="" value="{{$remark[$i] ?? '' }}">
+			   </div>          
+								
+			</div><!-- /.cell -->
+
 
                
       
@@ -274,14 +316,14 @@
                                    
                 </div><!-- /.cell -->
 
-				<div class='table_small'>          
+				{{-- <div class='table_small'>          
 					<div class='table_cell'>@lang('ccms.ordering')</div>
 					<div class='table_cell'>
 					  <div class="input-group">
 						<input type="text" name="ordering[]" id="ordering0" class="spinbox-input form-control input-sm text-center ordering0"​ value="{{ $ordering[$i] ?? '' }}">
 					  </div> 
 					</div>                     
-				  </div><!-- /.cell --> 
+				  </div><!-- /.cell -->  --}}
       
                 <div class='table_small'>          
                   <div class='table_cell'>&nbsp;</div>
@@ -361,6 +403,34 @@
       <input type="text" class="form-control input-sm" name="phonenum[]" id="phonenum" placeholder="" value="">
     </div>                                    
   </div><!-- /.cell -->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Buy Date</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="buydate[]" id="buydate" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell (Buy Date, Install Date, Donor(text), Remark(text))-->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Install Date</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="installdate[]" id="install" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell (Buy Date, Install Date, Donor(text), Remark(text))-->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Donor</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="donor[]" id="donor" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell (Buy Date, Install Date, Donor(text), Remark(text))-->
+
+  <div class='table_small'>                     
+    <div class='table_cell'>Remark</div>
+    <div class='table_cell'>
+      <input type="text" class="form-control input-sm" name="remark[]" id="remark" placeholder="" value="">
+    </div>                                    
+  </div><!-- /.cell (Buy Date, Install Date, Donor(text), Remark(text))-->
   
   
   
@@ -387,16 +457,16 @@
 			</select>
 		</div>          
 					   
-	</div><!-- /.cell --> 
+	</div><!-- /.cell  (Buy Date, Install Date, Donor(text), Remark(text))--> 
 
-	<div class='table_small'>                       
+	{{-- <div class='table_small'>                       
 		<div class='table_cell'>@lang('ccms.ordering')</div>
 		  <div class='table_cell'>
 			<div class="input-group">
 			  <input type="text" name="ordering[]" id="ordering" class="spinbox-input form-control input-sm text-center" value="">
 			</div> 
 		</div>
-	  </div><!-- /.cell -->
+	  </div><!-- /.cell --> --}}
                 
    <div class='table_small'>
                               

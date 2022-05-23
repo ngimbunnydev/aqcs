@@ -582,6 +582,14 @@ class DeviceController extends Controller
             $title['title-'.$key]=$value;
         }
         $input = array_merge($input, $title);
+
+         #extract tag#
+         $data_tag = json_decode($input['tag'], TRUE)??[];
+         $tag=[];
+         foreach ($data_tag as $key => $value) {
+             $tag[$key]=$value;
+         }
+         $input = array_merge($input, $tag);
       
         $x = [];
         foreach ($input as $key => $value) {
@@ -679,6 +687,7 @@ class DeviceController extends Controller
             $numrecord=count($request->input($this->fprimarykey));
         }
 
+        $tags=['buydate', 'installdate', 'donor', 'remark'];
         for($i=0; $i<$numrecord; $i++)
         {
             foreach (config('ccms.multilang') as $lang)
@@ -686,6 +695,14 @@ class DeviceController extends Controller
                 $title[$lang[0]]=$request->input('title-'.$lang[0])[$i];
 
             } #./foreach#
+
+            
+            $tag=[];
+            foreach ($tags as $field) 
+            {
+                $tag[$field]=$request->input($field)[$i]??'';
+                    
+            }
 
             $record = [
             
@@ -699,7 +716,7 @@ class DeviceController extends Controller
                 'status' => !empty($request->input('status')[$i])?$request->input('status')[$i]:'',
                 'display' => !empty($request->input('display')[$i])?$request->input('display')[$i]:'yes',
                 'ordering' => !empty($request->input('ordering')[$i])?$request->input('ordering')[$i]:0,
-                'tag' => '',
+                'tag' => json_encode($tag),
                 'trash' => 'no',
                 'blongto' => $this->args['userinfo']['id']
             
@@ -716,7 +733,7 @@ class DeviceController extends Controller
             $tableData = array_except($tableData, [$this->fprimarykey, 'blongto']);
             //function removes the given key / value pairs from an array:
         }
-
+    
         return ['tableData' => $tableData, 'id'=>$newid];
         
 
