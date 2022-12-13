@@ -1292,6 +1292,7 @@ class AirqualitymonitoringController extends Controller
 
     public function storeapi(Request $request)
     {
+        return;
         //dd($request->all());
         //dd(json_decode($request->getContent(), true));
         $apidata = json_decode($request->getContent(), true);
